@@ -75,6 +75,7 @@ toc:
 #### Links
 links:
   Android Dev: http://developer.android.com/index.html,Android Developers
+  老罗的Android之旅: http://blog.csdn.net/luoshengyang
 
 
 
@@ -110,8 +111,8 @@ totop: true           ## if you want to scroll to top in every post set the valu
 
 #### Custom Search
 google_cse: 
-  enable: false
-  cx:   ## e.g. 018294693190868310296:abnhpuysycw your Custom Search ID.
+  enable: true
+  cx: 002889855103703517282:j15bimgg0f4  ## e.g. 018294693190868310296:abnhpuysycw your Custom Search ID.
 ## https://www.google.com/cse/ 
 ## To enable the custom search You must create a "search" folder in '/source' and a "index.md" file
 ## set the 'front-matter' as
