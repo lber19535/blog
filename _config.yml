@@ -70,3 +70,6 @@ stylus:
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
   type: git
+  repo: https://github.com/lber19535/lber19535.github.io.git
+  branch: master
+  message: 
