@@ -8,6 +8,8 @@ tags:
 
 自制知乎 App 的过程中遇到了要修改 Toolbar 颜色等主题方面的问题，把走过的一些坑记录下。
 
+<!--more-->
+
 首先上一下最终效果：
 ![最终效果](http://7xisp0.com1.z0.glb.clouddn.com/toolbar_exercise_final.png)
 
