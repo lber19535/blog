@@ -246,7 +246,6 @@ void MediaPlayerService::instantiate() {
 }
 
 int main(int argc __unused, char** argv)
-
 {
     ...
     sp<ProcessState> proc(ProcessState::self());
@@ -255,8 +254,11 @@ int main(int argc __unused, char** argv)
     AudioFlinger::instantiate();
     // 就是这里啦
     MediaPlayerService::instantiate();
+    // 照相机
     CameraService::instantiate();
+    // 音频
     AudioPolicyService::instantiate();
+    // 语音识别
     SoundTriggerHwService::instantiate();
     registerExtensions();
     ProcessState::self()->startThreadPool();
