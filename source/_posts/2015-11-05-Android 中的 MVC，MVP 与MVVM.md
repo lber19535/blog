@@ -159,6 +159,8 @@ public class AppListItem {
 ```
 这里 AppListItem 和 AppListAdapter 都是 Model，Activity 通过 notifyDataSetChanged 刷新 Adapter 让 View 更新，这就形成了 MVC 的一个循环。
 
+MVC 的好处在于三者之间都可以相互控制，但是所带来的问题就是会让三个部分耦合性较高，从而导致一个小的更改需要改三个部分。
+
 
 ![MVP](http://7xisp0.com1.z0.glb.clouddn.com/android_mvp.png)
 
