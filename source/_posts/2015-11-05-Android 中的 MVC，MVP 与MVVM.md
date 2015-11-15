@@ -159,10 +159,17 @@ public class AppListItem {
 ```
 这里 AppListItem 和 AppListAdapter 都是 Model，Activity 通过 notifyDataSetChanged 刷新 Adapter 让 View 更新，这就形成了 MVC 的一个循环。
 
-MVC 的好处在于三者之间都可以相互控制，但是所带来的问题就是会让三个部分耦合性较高，从而导致一个小的更改需要改三个部分。在 Android 中，Activity 和 Fragment 经常扮演的角色是 View + Controller，这就使得经常出现上千行的 Activity。下面介绍 MVP，属于 MVC 的进化版本。
+MVC 的好处在于三者之间都可以相互控制，但是所带来的问题就是会让三个部分耦合性较高，从而导致一个小的更改需要改三个部分。在 Android 中，Activity 和 Fragment 经常扮演的角色是 View + Controller，这就使得经常出现上千行的 Activity。
 
 ## 2.MVP
+MVP 是 MVC 的进化版本，在 MVC 中 Model，View，Controller 三者可以互相访问，而在 MVP 中，Model 和 View 是不能相互控制的，Model 获取数据通知 Presenter，Presenter 再去调用相关的业务逻辑更新 View。所以，三者的分工为 View 负责显示数据，并把接收到的操作通知 Presenter，Presenter 通过 View 传来的操作来决定获取什么数据，Model 则是获取数据的部分。另一个区别就是在 View 和 Presenter 之间加入了接口以达到解耦的目的。还是以之前显示一个 App 的列表来做例子。
 
+先看下代码结构：
+![](http://7xisp0.com1.z0.glb.clouddn.com/mvp_packages.png)
 
-![MVP](http://7xisp0.com1.z0.glb.clouddn.com/android_mvp.png)
+其中 Presenter 持有 Model 和 View 的引用，并且处理业务逻辑。整个的过程是 MainActivity 响应事件，然后将事件通过 MainPresenter 接口传递给 Presenter，Presenter 调用 MainModel 接口去加载数据，加载完成后通过 MainView 接口回传给 View 层并显示。
+
+代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/designpattern/mvp) 上。
+
+MVP 的设计通过接口让三部分的代码分离，使得 View（Activity）这一部分专注于 View 的工作，同时也使代码结构更清晰
 
