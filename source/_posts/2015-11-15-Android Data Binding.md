@@ -20,7 +20,7 @@ classpath 'com.android.databinding:dataBinder:1.0-rc4'
 ```
 到目前为止 gradle plugin 版本是 1.5.0， dataBinder 版本是 1.0-rc4。这里不建议使用加号代替具体的版本号，推荐使用一个具体的版本号。这里提供了代码仓库的网站可供查找库的最新版本 [gradle build plugin jcenter](https://bintray.com/android/android-tools/com.android.tools.build.gradle/view) 和 [data binding lib](https://bintray.com/android/android-tools/com.android.databinding.dataBinder/view)。同时这个功能向前兼容到 Android 2.1。
 
-到现在这个东西还在 beta 版本，官方的 guide 的也是有阵子没更新了，文档中提到的 gradle 中要加 databinding 的 enable 选项，现在不需要加了。写这篇文章使用的 Android Studio 1.5 Beta，对databinding 的代码提示和 UI 预览还不是很完善。
+到现在这个东西还在 beta 版本，官方的 guide 的也是有阵子没更新了，文档中提到的 gradle 中要加 databinding 的 enable 选项，现在不需要加了。写这篇文章使用的 Android Studio 1.5，对databinding 的代码提示和 UI 预览还不是很完善。
 
 ## 2.绑定布局文件
 DataBinding 的作用是自动绑定布局文件和代码中的变量，省去了自己写代码区操作 UI 的普通操作。
@@ -536,25 +536,267 @@ public class ActivityBasicBinding extends android.databinding.ViewDataBinding {
     ...
 } 
 ```
-
+从代码中可以看到设置了 id 的 view 会按照 id 来生成对应变量，并且设置为 public，如果没有设置 id，则会自动生成一个 mboundView1 之类的私有成员。
 ```java
 binding.bindViewId.setText("bind view id");
 ```
 
 ### 5.2 变量的绑定
+每一个变量都会生成一个 setter 和 getter 方法：
+```java
+public boolean setVariable(int variableId, Object variable) {
+    switch(variableId) {
+        case BR.user :
+            setUser((com.exmaple.bill.databinding.model.User) variable);
+            return true;
+        case BR.list :
+            setList((java.util.List<java.lang.String>) variable);
+            return true;
+        case BR.index :
+            setIndex((int) variable);
+            return true;
+    }
+    return false;
+}
+```
+在 setVariable 方法中统一设置变量的值。
 
 ### 5.3 ViewStub
+xml 的写法还是和以前一样：
+```xml
+<ViewStub
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/view_stub"
+    android:layout="@layout/layout_databinding_basic"/>
+```
+binding 会生成一个对应 id 的 [ViewStubProxy](https://developer.android.com/reference/android/databinding/ViewStubProxy.html)。然后再需要 inflate 的时候使用 proxy 获取到真正的 viewstub：
+```java
+binding.viewStub.setOnInflateListener(new ViewStub.OnInflateListener() {
+            @Override
+            public void onInflate(ViewStub stub, View inflated) {
+                LayoutDatabindingBasicBinding b = DataBindingUtil.bind(inflated);
+                User u = new User("Lei", "Feng");
+                b.setUser(u);
+            }
+});
+
+public void onShowViewStub(View v) {
+     if (!binding.viewStub.isInflated()){
+         binding.viewStub.getViewStub().inflate();
+     }
+}
+```
+Android Studio 1.5 对这个支持还比较渣，使用 ViewStubProxy 居然都会报错，好在编译没有问题。
 
 ### 5.4 绑定的高级用法
+这部分是其他一些方法的使用，例如在 RecyclerView 中的使用。
+```java
+class Holder extends RecyclerView.ViewHolder{
+    ListItemNameBinding binding;
+
+    public Holder(View itemView) {
+        super(itemView);
+    }
+
+    public void setBinding(ListItemNameBinding bind){
+        this.binding = bind;
+    }
+
+    public ListItemNameBinding getBinding() {
+        return binding;
+    }
+}
+
+@Override
+public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
+    ListItemNameBinding binding =  DataBindingUtil.inflate(LayoutInflater.(parent.getContext()), R.layout.list_item_name, parent, false);
+    Holder holder = new Holder(binding.getRoot());
+    holder.setBinding(binding);
+    return holder;
+}
+@Override
+public void onBindViewHolder(Holder holder, int position) {
+    holder.getBinding().setUser(userList.get(position));
+}
+```
+主要是 binding 的传递，并且简化了给 view 的赋值。
 
 ## 6.Attribute Setters
+自定义 View 的各种属性。
 
 ### 6.1 Automatic Setters
+自动设置算是一个比较常用的方法：
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="on attribute click"
+            app:OnClickListener="@{activity.listener}"/>
+
+    </LinearLayout>
+
+    <data>
+
+        <import type="com.exmaple.bill.databinding.ui.ActivityAttribute"/>
+
+        <variable
+            name="activity"
+            type="ActivityAttribute"/>
+    </data>
+</layout>
+```
+```java
+public class ActivityAttribute extends AppCompatActivity {
+
+    public View.OnClickListener listener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast.makeText(ActivityAttribute.this,"OPS !!",Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ActivityDatabindingAttributeBinding bind = DataBindingUtil.setContentView(this, R.layout.activity_databinding_attribute);
+        bind.setActivity(this);
+    }
+}
+```
+首先 Activity 中有一个 listener 变量，在 xml 中拿到 activity 的引用，通过 app 的域来自动绑定对应属性。这个特性的好处在于可以对域（也就是styleable）中没有的属性进行设置，只要有对应的 setter 方法就行。
+
 
 ### 6.2 Renamed Setters
+这个现在貌似没法用，编译不过，以后正式发布了再试下，这里只记录下文档说的方法：
+```java
+@BindingMethods({
+       @BindingMethod(type = "android.widget.ImageView",
+                      attribute = "android:tint",
+                      method = "setImageTintList"),
+})
+```
+这个注解用于类，BindingMethods 内必须至少有一个 BindingMethod。这个注解可以重定义属性对应的 setter 方法，例如这个例子中 android:tint 对应的方法是 setImageTintList()，而并不是 settint()。
 
 ### 6.3 Custom Setters
+这个用法用于将 xml 中自定义的属性和 java code 绑定在一起，而不用写 styleable。下面是一个完整的例子：
+```java
+public class NameCard extends LinearLayout {
+    private int mAge;
 
+    private TextView mFirstName;
+    private TextView mLastName;
+
+    public NameCard(Context context) {
+        this(context, null);
+    }
+
+    public NameCard(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public NameCard(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init() {
+        inflate(getContext(), R.layout.layout_name_card, this);
+        mFirstName = (TextView) findViewById(R.id.first_name);
+        mLastName = (TextView) findViewById(R.id.last_name);
+    }
+
+    public void setFirstName(@NonNull final String firstName) {
+        mFirstName.setText(firstName);
+    }
+
+    public void setLastName(@NonNull final String lastName) {
+        mLastName.setText(lastName);
+    }
+
+}
+```
+java 类中定义了 setter 和 getter 方法，所以可以直接在 xml 中使用：
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="on attribute click"
+            app:OnClickListener="@{activity.listener}"/>
+
+        <com.exmaple.bill.databinding.NameCard
+            android:text="my view"
+            app:firstName="@{@string/firstName}"
+            app:lastName="@{@string/lastName}"
+            app:imageUrl="@{imageUrl}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <data>
+
+        <import type="com.exmaple.bill.databinding.ui.ActivityAttribute"/>
+
+        <variable
+            name="activity"
+            type="ActivityAttribute"/>
+        <variable
+            name="imageUrl"
+            type="String"/>
+    </data>
+</layout>
+```
+这里的 app:firstName 和 app:lastName 是会调用 NameCard 中的 setter 方法。而 app:imageUrl 会调用 java code 中的通过 BindingAdapter 绑定的方法：
+```java
+public class ActivityAttribute extends AppCompatActivity {
+
+    public View.OnClickListener listener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast.makeText(ActivityAttribute.this,"OPS !!",Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ActivityDatabindingAttributeBinding bind = DataBindingUtil.setContentView(this, R.layout.activity_databinding_attribute);
+        bind.setActivity(this);
+        bind.setImageUrl("xxxx");
+    }
+
+    @BindingAdapter({"xxx:imageUrl"})
+    public static void loadImage(NameCard view, String url) {
+        Toast.makeText(App.getAppContext(),"load img success",Toast.LENGTH_SHORT).show();
+    }
+}
+```
+绑定的方法需要几个注意的地方：
+* 必须是 public static 的方法。
+* 方法名无所谓
+* @BindingAdapter({"xxx:imageUrl"}) 中 xxx 的部分是随意写的，例如可以写成 app:imageUrl 或 bind:xxx:imageUrl 之类的都可以，不必要和 xml 中定义的相同。
+* app:firstName，app:lastName，app:imageUrl 的值必须是引用资源文件或者 java 传的对象，而不能直接写作 app:imageUrl="xxx"。
+* 方法的第一个参数必须是要绑定的 View 或布局，例如这里要绑定 NameCard 这个 View，就需要把它放到参数的第一个，后面的参数列表顺序是和 BindingAdapter 注解中的顺序是一样的。
 
 ## 7.Converters
 类型转换这部分是讲对象的类型是会被自动转换。
