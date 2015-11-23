@@ -379,16 +379,167 @@ android:text="@{@plurals/banana(bananaCount)}"
 
 
 ## 4.双向绑定
+双向绑定使用 Observable 来实现。
 
 ### 4.1 Observable 对象
+要继承 BaseObservable，对需要双向绑定的变量的 getter 方法加 Bindable 注解，并且在 setter 方法中通知该变量发生改变。其中 BR 和 R 文件一样，是对绑定对象的一个引用，例如这里的 BR.firstName。
 
+```java
+private static class User extends BaseObservable {
+   private String firstName;
+   private String lastName;
+   @Bindable
+   public String getFirstName() {
+       return this.firstName;
+   }
+   @Bindable
+   public String getLastName() {
+       return this.lastName;
+   }
+   public void setFirstName(String firstName) {
+       this.firstName = firstName;
+       notifyPropertyChanged(BR.firstName);
+   }
+   public void setLastName(String lastName) {
+       this.lastName = lastName;
+       notifyPropertyChanged(BR.lastName);
+   }
+}
+```
 ### 4.2 ObservableField
+
+效果和前面的一样就是写法不太一样：
+```java
+private static class User {
+   public final ObservableField<String> firstName =
+       new ObservableField<>();
+   public final ObservableField<String> lastName =
+       new ObservableField<>();
+   public final ObservableInt age = new ObservableInt();
+}
+```
+databinding 提供了一整套的这种东西：ObservableField，ObservableBoolean，ObservableByte，ObservableChar，ObservableShort，ObservableInt，ObservableLong，ObservableFloat，ObservableDouble，和 ObservableParcelable。他们都继承自 BaseObserable。
 
 ### 4.3 Observable 集合
 
+和上一节类似：
+```java
+ObservableArrayMap<String, Object> user = new ObservableArrayMap<>();
+user.put("firstName", "Google");
+user.put("lastName", "Inc.");
+user.put("age", 17);
+```
+
+```xml
+<data>
+    <import type="android.databinding.ObservableMap"/>
+    <variable name="user" type="ObservableMap&lt;String, Object>"/>
+</data>
+…
+<TextView
+   android:text='@{user["lastName"]}'
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"/>
+<TextView
+   android:text='@{String.valueOf(1 + (Integer)user["age"])}'
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"/>
+```
+这样更换不同的 map 就可以更换 TextView 中显示的内容。
+
+除了 map 还有 ObservableArrayList：
+```java
+ObservableArrayList<Object> user = new ObservableArrayList<>();
+user.add("Google");
+user.add("Inc.");
+user.add(17);
+```
+
+```xml
+<data>
+    <import type="android.databinding.ObservableList"/>
+    <import type="com.example.my.app.Fields"/>
+    <variable name="user" type="ObservableList&lt;Object>"/>
+</data>
+…
+<TextView
+   android:text='@{user[Fields.LAST_NAME]}'
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"/>
+<TextView
+   android:text='@{String.valueOf(1 + (Integer)user[Fields.AGE])}'
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"/>
+```
+这里的 Fields.AGE 是写在 java 代码中的 int 值。另外需要注意的就是 **&amplt;** 左括号写法。
+
+以上示例代码放到了 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/databinding) 中，目前来看有一些小问题，例如 import 要放到 data 内的开始，不能和变量混着写，会导致 import 失败进而导致编译错误。
+
 ## 5.绑定Class的生成
-创建的方法
+binding 类的的生成是自动的，生成的类继承自 [ViewDataBinding](https://developer.android.com/reference/android/databinding/ViewDataBinding.html)。
+
+下面是一个简单的写法，将 inflater 绑定到对应的 binding 上。
+```java
+MyLayoutBinding binding = MyLayoutBinding.inflate(layoutInflater);
+MyLayoutBinding binding = MyLayoutBinding.inflate(layoutInflater, viewGroup, false);
+```
+
+也可以这样：
+```java
+MyLayoutBinding binding = MyLayoutBinding.bind(viewRoot);
+```
+
+更多的时候是通过 [DataBindingUtil](https://developer.android.com/reference/android/databinding/DataBindingUtil.html) 来创建 binding：
+```java
+ViewDataBinding binding = DataBindingUtil.inflate(LayoutInflater, layoutId,
+    parent, attachToParent);
+ViewDataBinding binding = DataBindingUtil.bindTo(viewRoot, layoutId);
+```
+
 ### 5.1 View 和 ID 的绑定
+每一个带 id 的 view 都会对应一个 public final 的值，例如：
+```xml
+<TextView
+            android:id="@+id/bindViewId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+/>
+```
+则在 java 中则会有对应的 TextView 在 binding 中生成，当然 view 的 id 不是必须的，如果你不准备这样使用，那么就不需要给他加 id，编译的时候会自动生成一个 id 用于 binding 内部使用。
+例如会生成如下的代码：
+```java
+package com.exmaple.bill.databinding;
+import com.exmaple.bill.R;
+import com.exmaple.bill.BR;
+import android.view.View;
+public class ActivityBasicBinding extends android.databinding.ViewDataBinding {
+    
+    private static final android.databinding.ViewDataBinding.IncludedLayouts sIncludes;
+    private static final android.util.SparseIntArray sViewsWithIds;
+    static {
+        sIncludes = new android.databinding.ViewDataBinding.IncludedLayouts(7);
+        sIncludes.setIncludes(0, 
+            new String[] {"layout_databinding_basic"},
+            new int[] {5},
+            new int[] {R.layout.layout_databinding_basic});
+        sViewsWithIds = new android.util.SparseIntArray();
+        sViewsWithIds.put(R.id.bindViewId, 6);
+    }
+    // views
+    public final android.widget.TextView bindViewId;
+    private final android.widget.LinearLayout mboundView0;
+    private final com.exmaple.bill.databinding.LayoutDatabindingBasicBinding mboundView01;
+    private final android.widget.TextView mboundView1;
+    private final android.widget.TextView mboundView2;
+    private final android.widget.TextView mboundView3;
+    private final android.widget.TextView mboundView4;
+    ...
+} 
+```
+
+```java
+binding.bindViewId.setText("bind view id");
+```
 
 ### 5.2 变量的绑定
 
@@ -406,7 +557,31 @@ android:text="@{@plurals/banana(bananaCount)}"
 
 
 ## 7.Converters
-
+类型转换这部分是讲对象的类型是会被自动转换。
 ### 7.1 对象的转换
+例如，这里的 userMap 的泛型是 <String, Object>，这里 text 属性中拿到的值本来是 object，但是 text 赋值的时候是用 setText(CharSequence cs) 这个方法，所以 object 类型在方法这里就被自动转换为 CharSequence 了。
+```xml
+<TextView
+   android:text='@{userMap["lastName"]}'
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"/>
+```
 
 ### 7.2 自定义转换
+这里 background 需要的一个 Drawable，但是 color 是个 int，所以需要转换成 Drawable。
+```xml
+<View
+   android:background="@{isError ? @color/red : @color/white}"
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"/>
+```
+转换方法：
+```java
+@BindingConversion
+public static ColorDrawable convertColorToDrawable(int color) {
+   return new ColorDrawable(color);
+}
+```
+
+**以上是文档说法，但是在 databinding 1.0rc4 这个版本上尝试的时候，不需要这个 conver 方法就可以成功设置背景，加了这个方法反而设置不成功了。而且打印了 log 也看到确实走了这个方法。**
+
