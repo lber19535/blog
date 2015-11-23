@@ -827,3 +827,5 @@ public static ColorDrawable convertColorToDrawable(int color) {
 
 **以上是文档说法，但是在 databinding 1.0rc4 这个版本上尝试的时候，不需要这个 conver 方法就可以成功设置背景，加了这个方法反而设置不成功了。而且打印了 log 也看到确实走了这个方法。**
 
+## 8.总结
+本文以及部分 Demo 参考了[官方文档](https://developer.android.com/tools/data-binding/guide.html)和 [MasteringAndroidDataBinding](https://github.com/LyndonChin/MasteringAndroidDataBinding)，完整的 Demo 放在了我的 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/databinding) 上。
