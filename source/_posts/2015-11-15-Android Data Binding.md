@@ -573,12 +573,12 @@ xml 的写法还是和以前一样：
 binding 会生成一个对应 id 的 [ViewStubProxy](https://developer.android.com/reference/android/databinding/ViewStubProxy.html)。然后再需要 inflate 的时候使用 proxy 获取到真正的 viewstub：
 ```java
 binding.viewStub.setOnInflateListener(new ViewStub.OnInflateListener() {
-            @Override
-            public void onInflate(ViewStub stub, View inflated) {
-                LayoutDatabindingBasicBinding b = DataBindingUtil.bind(inflated);
-                User u = new User("Lei", "Feng");
-                b.setUser(u);
-            }
+      @Override
+      public void onInflate(ViewStub stub, View inflated) {
+          LayoutDatabindingBasicBinding b = DataBindingUtil.bind(inflated);
+          User u = new User("Lei", "Feng");
+          b.setUser(u);
+      }
 });
 
 public void onShowViewStub(View v) {
@@ -829,3 +829,7 @@ public static ColorDrawable convertColorToDrawable(int color) {
 
 ## 8.总结
 本文以及部分 Demo 参考了[官方文档](https://developer.android.com/tools/data-binding/guide.html)和 [MasteringAndroidDataBinding](https://github.com/LyndonChin/MasteringAndroidDataBinding)，完整的 Demo 放在了我的 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/databinding) 上。
+
+
+update 2015.11.25
+在最新的 Android Studio 2.0 preview 中终于可以显示正常而不是提示语法有问题了。
