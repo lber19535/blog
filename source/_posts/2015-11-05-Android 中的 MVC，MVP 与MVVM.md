@@ -171,5 +171,13 @@ MVP 是 MVC 的进化版本，在 MVC 中 Model，View，Controller 三者可以
 
 代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/designpattern/mvp) 上。
 
-MVP 的设计通过接口让三部分的代码分离，使得 View（Activity）这一部分专注于 View 的工作，同时也使代码结构更清晰
+MVP 的设计通过接口让三部分的代码分离，使得 View（Activity）这一部分专注于 View 的工作，同时也使代码结构更清晰。
+
+## 3.MVVM
+MVVM 算是 MVP 的进化版，通过双向绑定简化了 View 和 Model 之间的关系，在 MVP 中需要把 Model 的更新通过接口一步一步传到 View 层更新，而 MVVM 由于做了 model 和 view 的双向绑定，所以 model 的更新会自动同步到 view。但是在目前的 Android 中是很难实现双向绑定的，谷歌新推出的 Android 上的 databinding 插件也没有办法做到双向自动绑定的程度，所以在使用上没办法和 WPF 之类的成熟的东西相比。
+这部分的代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/designpattern/mvvm) 中，代码结构和 MVP 类似，只不过由于可以绑定数据到 View 上，所以就不需要写 View 和 ViewModel 之间的接口。
+
+
+## 4.总结
+三者的主要区别在于 UI，业务逻辑，数据之间的消息传递方向，在 MVC 中，传递时单向的闭环，在 MVP 中是 P 和 VM双向通信，在 MVVM 中 P 和 V 通信的部分会自动完成，所以代码重点放到了 VM 和 M 上面。
 
