@@ -473,7 +473,7 @@ user.add(17);
 ```
 这里的 Fields.AGE 是写在 java 代码中的 int 值。另外需要注意的就是 **&amplt;** 左括号写法。
 
-以上示例代码放到了 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/databinding) 中，目前来看有一些小问题，例如 import 要放到 data 内的开始，不能和变量混着写，会导致 import 失败进而导致编译错误。
+以上示例代码放到了 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/example/bill/databinding) 中，目前来看有一些小问题，例如 import 要放到 data 内的开始，不能和变量混着写，会导致 import 失败进而导致编译错误。
 
 ## 5.绑定Class的生成
 binding 类的的生成是自动的，生成的类继承自 [ViewDataBinding](https://developer.android.com/reference/android/databinding/ViewDataBinding.html)。
@@ -508,9 +508,9 @@ ViewDataBinding binding = DataBindingUtil.bindTo(viewRoot, layoutId);
 则在 java 中则会有对应的 TextView 在 binding 中生成，当然 view 的 id 不是必须的，如果你不准备这样使用，那么就不需要给他加 id，编译的时候会自动生成一个 id 用于 binding 内部使用。
 例如会生成如下的代码：
 ```java
-package com.exmaple.bill.databinding;
-import com.exmaple.bill.R;
-import com.exmaple.bill.BR;
+package com.example.bill.databinding;
+import com.example.bill.R;
+import com.example.bill.BR;
 import android.view.View;
 public class ActivityBasicBinding extends android.databinding.ViewDataBinding {
     
@@ -528,7 +528,7 @@ public class ActivityBasicBinding extends android.databinding.ViewDataBinding {
     // views
     public final android.widget.TextView bindViewId;
     private final android.widget.LinearLayout mboundView0;
-    private final com.exmaple.bill.databinding.LayoutDatabindingBasicBinding mboundView01;
+    private final com.example.bill.databinding.LayoutDatabindingBasicBinding mboundView01;
     private final android.widget.TextView mboundView1;
     private final android.widget.TextView mboundView2;
     private final android.widget.TextView mboundView3;
@@ -547,7 +547,7 @@ binding.bindViewId.setText("bind view id");
 public boolean setVariable(int variableId, Object variable) {
     switch(variableId) {
         case BR.user :
-            setUser((com.exmaple.bill.databinding.model.User) variable);
+            setUser((com.example.bill.databinding.model.User) variable);
             return true;
         case BR.list :
             setList((java.util.List<java.lang.String>) variable);
@@ -647,7 +647,7 @@ public void onBindViewHolder(Holder holder, int position) {
 
     <data>
 
-        <import type="com.exmaple.bill.databinding.ui.ActivityAttribute"/>
+        <import type="com.example.bill.databinding.ui.ActivityAttribute"/>
 
         <variable
             name="activity"
@@ -743,7 +743,7 @@ java 类中定义了 setter 和 getter 方法，所以可以直接在 xml 中使
             android:text="on attribute click"
             app:OnClickListener="@{activity.listener}"/>
 
-        <com.exmaple.bill.databinding.NameCard
+        <com.example.bill.databinding.NameCard
             android:text="my view"
             app:firstName="@{@string/firstName}"
             app:lastName="@{@string/lastName}"
@@ -755,7 +755,7 @@ java 类中定义了 setter 和 getter 方法，所以可以直接在 xml 中使
 
     <data>
 
-        <import type="com.exmaple.bill.databinding.ui.ActivityAttribute"/>
+        <import type="com.example.bill.databinding.ui.ActivityAttribute"/>
 
         <variable
             name="activity"
@@ -831,7 +831,7 @@ update 2015.12.4
 最新版的 Android Studio 这个功能已经正常。
 
 ## 8.总结
-本文以及部分 Demo 参考了[官方文档](https://developer.android.com/tools/data-binding/guide.html)和 [MasteringAndroidDataBinding](https://github.com/LyndonChin/MasteringAndroidDataBinding)，完整的 Demo 放在了我的 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/databinding) 上。
+本文以及部分 Demo 参考了[官方文档](https://developer.android.com/tools/data-binding/guide.html)和 [MasteringAndroidDataBinding](https://github.com/LyndonChin/MasteringAndroidDataBinding)，完整的 Demo 放在了我的 [github](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/example/bill/databinding) 上。
 
 
 update 2015.11.25

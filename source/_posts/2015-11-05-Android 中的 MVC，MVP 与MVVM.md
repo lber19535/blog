@@ -169,13 +169,13 @@ MVP 是 MVC 的进化版本，在 MVC 中 Model，View，Controller 三者可以
 
 其中 Presenter 持有 Model 和 View 的引用，并且处理业务逻辑。整个的过程是 MainActivity 响应事件，然后将事件通过 MainPresenter 接口传递给 Presenter，Presenter 调用 MainModel 接口去加载数据，加载完成后通过 MainView 接口回传给 View 层并显示。
 
-代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/designpattern/mvp) 上。
+代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/example/bill/designpattern/mvp) 上。
 
 MVP 的设计通过接口让三部分的代码分离，使得 View（Activity）这一部分专注于 View 的工作，同时也使代码结构更清晰。
 
 ## 3.MVVM
 MVVM 算是 MVP 的进化版，通过双向绑定简化了 View 和 Model 之间的关系，在 MVP 中需要把 Model 的更新通过接口一步一步传到 View 层更新，而 MVVM 由于做了 model 和 view 的双向绑定，所以 model 的更新会自动同步到 view。但是在目前的 Android 中是很难实现双向绑定的，谷歌新推出的 Android 上的 databinding 插件也没有办法做到双向自动绑定的程度，所以在使用上没办法和 WPF 之类的成熟的东西相比。
-这部分的代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/exmaple/bill/designpattern/mvvm) 中，代码结构和 MVP 类似，只不过由于可以绑定数据到 View 上，所以就不需要写 View 和 ViewModel 之间的接口。
+这部分的代码放在了 [GitHub](https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/example/bill/designpattern/mvvm) 中，代码结构和 MVP 类似，只不过由于可以绑定数据到 View 上，所以就不需要写 View 和 ViewModel 之间的接口。
 
 
 ## 4.总结
