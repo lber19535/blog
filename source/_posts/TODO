@@ -3,7 +3,7 @@
 3.RxJava 源码分析 P2
 4.自定义 View P1
 5.Retrofit 源码分析 P1
-6.Retrofit 使用指南 P1
+~~6.Retrofit 使用指南 P1~~
 7.Android app 多开原理 P2
 8.View 绘制机制 P1
 9.dvm jvm art 对比 P4
@@ -14,5 +14,6 @@
 14.算法 读书笔记 P3
 15.Android 通知 翻译 P1 
 16.编译原理 读书笔记 P4
-17.realm 使用指南 P1
+~~17.realm 使用指南 P1~~
 18.realm 源码分析 P1
+19.robolectric 使用
