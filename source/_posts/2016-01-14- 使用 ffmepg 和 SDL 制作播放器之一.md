@@ -11,14 +11,14 @@ tags:
 
 <!--more-->
 
-## 配置
+## 1.配置
 开发环境的配置原文没有，而且是在 Linux 下开发的，作为新手还是用 IDE 来得方便，这里主要说下 VS2015 + Win10 下的环境搭建。
 用到的两个库的下载地址是 [ffmpeg](http://ffmpeg.zeranoe.com/builds/) 和 [SDL](https://buildbot.libsdl.org/sdl-builds/sdl-visualstudio/?C=M;O=D)，ffmpeg 需要 share 和 dev 两个压缩包，share 中的是运行时需要的 dll，dev 是编译的需要的 lib 和 头文件。SDL 下载最新的就可以了。
 
 然后是设置项目的 Properties。首先设置 Debuging 部分的 Environment，添加 SDL 和 ffmpeg 的 dll 路径，然后是 C/C++ 部分，在 Additional Include Directories 中添加 ffmpeg 和 SDL 的头文件路径，最后在 Linker 中的 Additional Libraries Directories 添加 ffmpeg 和 SDL 的 lib 路径，并且将 lib 的名字加到 Input 的 Additional Dependencies 中。
 
 
-## 概述
+## 2.概述
 我们需要了解一下有关媒体文件的基础知识。首先，文件本身被称为容器，容器的类型决定了里面的信息存储的位置。例如，常见的类型 AVI，Quicktime 等。接下来是流，一般来说会有一个音频流和一个视频流。流中的数据单元就是帧。每个流有对应的解码器，解码器定义了数据该如何编码和解码，例如 mp3 解码器。Packets 是从流中读取的，每一个包就是一段数据，这个数据呗解码为帧供程序使用。目前来说，每一个 packets 包含一个完整的帧，在 audio 中也会有多个帧。
 
 基本上来说，处理音频视频流是很简单的：
@@ -31,7 +31,7 @@ tags:
 ```
 尽管很多程序在 DO SOMETHING 这一步做的非常复杂，但是使用 ffmpeg 处理多媒体还是非常简单的。在这个教程中，我们要打开一个文件，读出视频流，并且将其中的帧写到 ppm 文件中。
 
-## 打开文件
+## 3.打开文件
 首先我们看下如何打开文件。在使用 ffmpeg 的时候需要初始化整个库：
 ```c++
 extern "C"{ // 由于我用的是 C++，所以加了这个
@@ -100,7 +100,7 @@ if (avcodec_open2(pCodecCtx, pCodec, nullptr) < 0)
 ```
 我们没办法直接使用 AVCodecContext，所以需要用 avcodec_copy_context 复制一个新的来使用。
 
-## 存储数据
+## 4.存储数据
 现在我们需要一个地方来存放帧：
 ```c++
 // Allocate video frame
@@ -133,7 +133,7 @@ avpicture_fill((AVPicture *)pFrameRGB, buffer, PIX_FMT_RGB24, pCodecCtx->width, 
 现在我们用 avpicture_fill 方法将帧和新的 buffer 组合。
 关于 AVPicture 转换：AVPicture 结构体是 AVFrame 的子集，具体来说就是 AVFrame 的头两个元素 uint8_t *data[4] 和 int linesize[4]: Stride information 就是 AVPicture。终于我们准备好号从流中开始读数据了。
 
-## 读数据
+## 5.读数据
 流程是读一个包，解码为帧，当帧解码完成后把他存储下来。
 
 ```c++
