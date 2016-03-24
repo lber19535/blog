@@ -105,7 +105,7 @@ if (avcodec_open2(pCodecCtx, pCodec, nullptr) < 0)
 ```c++
 // Allocate video frame
 pFrame = av_frame_alloc();
-``` 
+```
 由于我们要输出一个用 24-bit RGB 的 ppm 的文件，我们需要把帧转换为 RGB 格式，ffmpeg 为我们提供了一些便利的方法。大多数项目中，我们都会将初始的帧转换为特定类型的帧。现在我们需要一个 RGB 的帧：
 ```c++
 // Allocate an AVFrame structure
@@ -233,6 +233,7 @@ gcc -o tutorial01 tutorial01.c -lavformat -lavcodec -lz -lm
 
 由于我用的是 VS，所以直接点运行就跑起来了。最后在项目根目录生成了几个 PPM 文件，生成的文件可以用 [File Viewer Lite](http://windowsfileviewer.com/) 来查看。
 
-目前遇到的问题是解码出来的 宽是 8，但高是正常的 640。之后找到怎么解决我还会回来更新。
+~~目前遇到的问题是解码出来的 宽是 8，但高是正常的 640。之后找到怎么解决我还会回来更新。~~
+更换了最新 ffmpeg 的库之后，宽度的问题解决了。
 
 下一章是使用 SDL 将图像输出到屏幕上。

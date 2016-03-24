@@ -22,6 +22,17 @@ classpath 'com.android.databinding:dataBinder:1.0-rc4'
 
 到现在这个东西还在 beta 版本，官方的 guide 的也是有阵子没更新了，文档中提到的 gradle 中要加 databinding 的 enable 选项，现在不需要加了。写这篇文章使用的 Android Studio 1.5，对databinding 的代码提示和 UI 预览还不是很完善。
 
+**2016.3.24 update**
+
+现在只需在 gradle 中加入 databinding 就可以使用了，之前的 plugin 和 classpath 都不需要了，现在的 databinding 作为 support lib 存在，所以使用之前需要去 SDK Manager 中更新 support 包。
+```java
+android {
+    dataBinding {
+        enabled = true
+    }
+}
+```
+
 ## 2.绑定布局文件
 DataBinding 的作用是自动绑定布局文件和代码中的变量，省去了自己写代码区操作 UI 的普通操作。
 
