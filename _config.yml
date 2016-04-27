@@ -7,7 +7,7 @@ title: LOST HOME
 subtitle: YESTERDAY YOU SAID TOMORROW
 description: YESTERDAY YOU SAID TOMORROW
 author: Bill Lv
-language: zh-CN
+language: zh-Hans
 timezone:
 
 # URL
@@ -62,7 +62,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: http://hexo.io/plugins/
 ## Themes: http://hexo.io/themes/
-theme: jacman
+theme: next
 stylus: 
     compress: true
 
@@ -73,3 +73,5 @@ deploy:
   repo: https://github.com/lber19535/lber19535.github.io.git
   branch: master
   message: 
+
+duoshuo_shortname: lber19535
