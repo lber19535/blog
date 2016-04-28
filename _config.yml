@@ -74,4 +74,6 @@ deploy:
   branch: master
   message: 
 
+# duoshuo config
 duoshuo_shortname: lber19535
+duoshuo_share: true
