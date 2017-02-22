@@ -1,3 +1,3 @@
 hexo clean
 hexo g
-hexo s -i localhost -p 4096
+hexo server -i localhost -p 4096

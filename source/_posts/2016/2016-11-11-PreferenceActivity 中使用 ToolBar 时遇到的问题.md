@@ -5,6 +5,7 @@ categories:   Android
 list_number:  false
 ---
 
+在使用 ToolBar 和 PreferenceActivity 的时候遇到的小问题。
 
 <!--more-->
 
