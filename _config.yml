@@ -75,8 +75,8 @@ deploy:
   message: 
 
 # duoshuo config
-duoshuo_shortname: lber19535
-duoshuo_share: true
+# duoshuo_shortname: lber19535
+# duoshuo_share: true
 
 # GA
 google_analytics: UA-62416761-1
