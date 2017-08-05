@@ -1,6 +1,6 @@
 ---
 title:        "CheckboxPreference 改造"
-date:         2017-09-22 17:00
+date:         2017-06-22 17:00
 categories:   Android
 list_number:  false
 tags:
