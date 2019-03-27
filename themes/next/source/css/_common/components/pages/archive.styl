@@ -1,7 +1,3 @@
-.use-motion {
-  .post { opacity: 0; }
-}
-
 .page-archive {
 
   .archive-page-counter {
@@ -15,18 +11,6 @@
   }
 
   .posts-collapse {
-    position: relative;
-    z-index: $zindex-1;
-
-    &::after {
-      top: 20px;
-      left: 0;
-      margin-left: -2px;
-      width: 4px;
-      height: 100%;
-      background: $whitesmoke;
-      z-index: $zindex-bottom;
-    }
 
     .archive-move-on {
       position: absolute;
@@ -41,10 +25,10 @@
 
       circle();
     }
+  }
 
-    &::before, &::after {
-      content: " ";
-      position: absolute;
-    }
+  .fa-external-link {
+    font-size: 15px;
+    margin-left: 5px;
   }
 }
