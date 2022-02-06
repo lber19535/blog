@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+
+<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"lber19535.github.io","root":"/blog/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="这个主题分为两个部分来讲，第一部分主要讲 Android 中的 Handler，AsyncTask，Thread 以及一些相关的开源库（RxJava，Eventbus），第二部分主要讲 Atomic，volatile，synchronized 等 JSR-133 中的东西。本文是第一部分。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 与并发 1">
+<meta property="og:url" content="https://lber19535.github.io/blog/2016/05/04/2016/2016-05-04-Android%20%E4%B8%8E%E5%B9%B6%E5%8F%91%201/index.html">
+<meta property="og:site_name" content="LOST HOME">
+<meta property="og:description" content="这个主题分为两个部分来讲，第一部分主要讲 Android 中的 Handler，AsyncTask，Thread 以及一些相关的开源库（RxJava，Eventbus），第二部分主要讲 Atomic，volatile，synchronized 等 JSR-133 中的东西。本文是第一部分。">
+<meta property="og:locale">
+<meta property="og:image" content="http://7xisp0.com1.z0.glb.clouddn.com/logic_control_flow.png">
+<meta property="article:published_time" content="2016-05-04T17:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-06T14:23:36.287Z">
+<meta property="article:author" content="Bill Lv">
+<meta property="article:tag" content="Java Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://7xisp0.com1.z0.glb.clouddn.com/logic_control_flow.png">
+
+<link rel="canonical" href="https://lber19535.github.io/blog/2016/05/04/2016/2016-05-04-Android%20%E4%B8%8E%E5%B9%B6%E5%8F%91%201/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Android 与并发 1 | LOST HOME</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LOST HOME</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">YESTERDAY YOU SAID TOMORROW</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://lber19535.github.io/blog/2016/05/04/2016/2016-05-04-Android%20%E4%B8%8E%E5%B9%B6%E5%8F%91%201/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="name" content="Bill Lv">
+      <meta itemprop="description" content="YESTERDAY YOU SAID TOMORROW">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LOST HOME">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android 与并发 1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-05-04 17:00:00" itemprop="dateCreated datePublished" datetime="2016-05-04T17:00:00+00:00">2016-05-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-02-06 14:23:36" itemprop="dateModified" datetime="2022-02-06T14:23:36+00:00">2022-02-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这个主题分为两个部分来讲，<a href="">第一部分</a>主要讲 Android 中的 Handler，AsyncTask，Thread 以及一些相关的开源库（RxJava，Eventbus），<a href="">第二部分</a>主要讲 Atomic，volatile，synchronized 等 JSR-133 中的东西。本文是第一部分。</p>
+<span id="more"></span>
+
+<h2 id="1-什么是并发"><a href="#1-什么是并发" class="headerlink" title="1.什么是并发"></a>1.什么是并发</h2><p>一个逻辑流的执行在时间上于另一个流重叠，称为并发流，多个流并发的执行称为并发。这里的逻辑流简单来说就是代码片段。下面用一个图简单说明下：</p>
+<p><img src="http://7xisp0.com1.z0.glb.clouddn.com/logic_control_flow.png"></p>
+<p>CPU 并不由某一个进程独占，CPU 会在运行的时候在多个进程之间切换让用户以为当前的进程是独占 CPU 的，在这个图中，A 和 B，A 和 C 都是并发运行，而 B 和 C 不是，因为 B 和 C 的运行时间并不重叠。</p>
+<p>由于进程创建的开销比较大，并且进程之间通信的开销也比较大，后来就有了线程的概念。线程是运行在进程上下文中的逻辑流，每个线程都有自己的上下文，并且线程之间共享进程的空间。这里的线程就是 Java 中平时我们用的 Thread，在 Linux 的 C&#x2F;C++ 中是 pthread。需要注意的是，并发和 CPU 的核数没有必然的联系。</p>
+<h2 id="2-Thread-和-Runnable"><a href="#2-Thread-和-Runnable" class="headerlink" title="2.Thread 和 Runnable"></a>2.Thread 和 Runnable</h2><p>在 Java 中 Runnable 仅仅是个接口，是一个抽象上的概念，实现了这个抽象的就是 Thread。Thread 本身的实现是 native 的，不同操作系统的实现不一样，例如在 Linux 上是用 pthread 实现的，在 Android 上当然也是 pthread。</p>
+<p>Thread 可以算是并发运行中的一个基本单位了，下面介绍下 Java 中并发的写法。</p>
+<h3 id="2-1-ExecutorService"><a href="#2-1-ExecutorService" class="headerlink" title="2.1 ExecutorService"></a>2.1 ExecutorService</h3><p>Java 为我们提供了 ExecutorService 接口用来管理并发的线程，先看一段代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newCachedThreadPool();</span><br><span class="line">    <span class="type">Runnable</span> <span class="variable">task</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;xxxx&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    Future&lt;?&gt; submit = executorService.submit(task);</span><br><span class="line">    <span class="comment">//submit.cancel(true);</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>submit 方法用于将 Runnable 放到线程池中，然后由线程池来管理，什么时候执行由线程池说了算，并且执行的时候不会阻塞当前的线程。Future 是 submit 方法创建的一个默认 Future，用来返回异步的结果，也可以用 Future 来取消对应线程的执行。</p>
+<h3 id="2-2-线程池"><a href="#2-2-线程池" class="headerlink" title="2.2 线程池"></a>2.2 线程池</h3><p>线程池实际上是一种管理线程运行的模式，具体的实现一般是通过一个队列来管理线程的执行顺序。</p>
+<p>在前一节中 newCachedThreadPool 方法创建一个带缓存功能的线程池，用于重用 Thread 避免创建新的 Thread 带来的开销。Exectors 还为我们提供了其他常用的线程池，并且我们可以对这些线程池进行自定义：</p>
+<ul>
+<li>newSingleThreadExecutor 大小为1的线程池，同时只运行一个线程</li>
+<li>newScheduledThreadPool 可以添加 delay 的线程池</li>
+<li>newFixedThreadPool 固定大小的线程池，可控制最大并发数，多出来的会放在队列中等待</li>
+<li>newSingleThreadScheduledExecutor 看名字就知道是前两种的组合</li>
+</ul>
+<p>Executors 中的方法还为我们提供了一些参数，用来定义线程池所使用的工作队列，线程池最大并发数等。当线程池被显式的 shutdown 后，其中运行的线程也会 shutdown。</p>
+<p>在 Android 中绝大部分第三方库中的后台操作都是使用这些线程池实现的，同事谷歌在文档中也建议开发者将耗时的操作使用线程池来处理而不是用 AsyncTask。</p>
+<h2 id="3-Handler"><a href="#3-Handler" class="headerlink" title="3.Handler"></a>3.Handler</h2><p>Handler 有两个用途，一个是处理 Message 或者 Runnable 的回调，另一个是让别的线程执行一些操作。这些用途都是依赖于 Looper 这个类，这里我们看下 Looper 的原理和作用。</p>
+<h3 id="3-1-Looper"><a href="#3-1-Looper" class="headerlink" title="3.1 Looper"></a>3.1 Looper</h3><p>Looper 是一个和线程相关的东西，每一个线程有一个对应的 Looper，他用到了 ThreadLocal 这个概念。ThreadLocal 是线程内全局，线程间独立的一个东西，它用来保存那些你只想在线程内共享的变量，例如 Looper。Looper 在线程中创建了一个 MessageQueue，通过 loop 方法 Looper 会去遍历这个队列，将其中的 Message 取出来，并通过 Handler 将 Message 分发到 Handler 的 handleMessage 方法中。我们可以看下 Looper 的源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Looper</span> &#123;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Looper&gt; sThreadLocal = <span class="keyword">new</span> <span class="title class_">ThreadLocal</span>&lt;Looper&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Looper sMainLooper;  <span class="comment">// guarded by Looper.class</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">prepare</span><span class="params">()</span> &#123;</span><br><span class="line">        prepare(<span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">prepare</span><span class="params">(<span class="type">boolean</span> quitAllowed)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (sThreadLocal.get() != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Only one Looper may be created per thread&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        sThreadLocal.set(<span class="keyword">new</span> <span class="title class_">Looper</span>(quitAllowed));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里只摘录一部分源码，可以看到 Looper 有一个 sMainLooper，这个是在主线程中创建的，另一个是 sThreadLocal，sThreadLocal 保存了当前线程的 Looper。sThreadLocal 的 get 方法会从当前线程中取出对应的 Looper。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> T <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="type">ThreadLocalMap</span> <span class="variable">map</span> <span class="operator">=</span> getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="literal">null</span>) &#123;</span><br><span class="line">        ThreadLocalMap.<span class="type">Entry</span> <span class="variable">e</span> <span class="operator">=</span> map.getEntry(<span class="built_in">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (e != <span class="literal">null</span>)</span><br><span class="line">            <span class="keyword">return</span> (T)e.value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> setInitialValue();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这两个变量是 static 的，所以当使用的时候 Looper 总是会保存一个 UI 线程和一个当前线程的 Looper，这其实也就是 Looper 的主要作用，用于别的线程和 UI 线程通信，最常见的用法就是在后台线程中获取数据，然后通过 handler 去更新 UI 线程。</p>
+<p>总结下来就是每一个线程对应一个 Looper，当在线程中建立自己的 Looper 的时候需要先调用 prepare，如果想要发消息到 UI 线程，那么就 prepareMainLooper，如果是当前线程则 prepare。如果是在非主线程中使用的话在发出消息后需要手动调用 loop 去循环 MessageQueue 去发消息。通过这些分析我们可以看到这个东西的设计主要是为其它线程和 UI 通信而设计的。</p>
+<h3 id="3-2-Handler-和-Looper-的使用"><a href="#3-2-Handler-和-Looper-的使用" class="headerlink" title="3.2 Handler 和 Looper 的使用"></a>3.2 Handler 和 Looper 的使用</h3><p>使用很简单，这里就不赘述了，写两个例子，第一个是主线程中使用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main3Activity</span> <span class="keyword">extends</span> <span class="title class_">AppCompatActivity</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Bundle savedInstanceState)</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">         <span class="type">Handler</span> <span class="variable">h</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Handler</span>()&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleMessage</span><span class="params">(Message msg)</span> &#123;</span><br><span class="line">                <span class="built_in">super</span>.handleMessage(msg);</span><br><span class="line">                <span class="comment">// handle something</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">         h.sendEmptyMessage(<span class="number">0</span>);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>别的线程中使用:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        Looper.prepare();</span><br><span class="line">        <span class="type">Handler</span> <span class="variable">h</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Handler</span>()&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleMessage</span><span class="params">(Message msg)</span> &#123;</span><br><span class="line">                <span class="built_in">super</span>.handleMessage(msg);</span><br><span class="line">                <span class="comment">// in this thread</span></span><br><span class="line">                Looper.myLooper().quit();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        h.sendEmptyMessage(<span class="number">1</span>);</span><br><span class="line">        Looper.loop();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;).start();</span><br></pre></td></tr></table></figure>
+<p>Looper.loop() 会阻塞当前线程，所以在使用完之后需要手动 quit，那么为什么 UI 线程中使用不需要呢，下面我们来看下源码。</p>
+<h3 id="3-3-Activity-中的-Looper"><a href="#3-3-Activity-中的-Looper" class="headerlink" title="3.3 Activity 中的 Looper"></a>3.3 Activity 中的 Looper</h3><p>这个是 Looper 在 ActivityThread 中的使用，由于在 main 函数中使用了，所以我们在主线程中使用 Handler 去发消息的并没有手动调用，最后的 throw 也表示如果 loop 退出了则 UI 线程结束了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ActivityThread</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">        Looper.prepareMainLooper();</span><br><span class="line"></span><br><span class="line">        <span class="type">ActivityThread</span> <span class="variable">thread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ActivityThread</span>();</span><br><span class="line">        thread.attach(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (sMainThreadHandler == <span class="literal">null</span>) &#123;</span><br><span class="line">            sMainThreadHandler = thread.getHandler();</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        <span class="comment">// End of event ActivityThreadMain.</span></span><br><span class="line">        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);</span><br><span class="line">        Looper.loop();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Main thread loop unexpectedly exited&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-AsyncTask"><a href="#4-AsyncTask" class="headerlink" title="4.AsyncTask"></a>4.AsyncTask</h2><p>AsyncTask 是官方提供的一个后台线程和 UI 线程交互的工具类，这个类实际上是封装了前面说到的 ExecutorService。AsyncTask 中有两个 Executor：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * An &#123;<span class="doctag">@link</span> Executor&#125; that can be used to execute tasks in parallel.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Executor</span> <span class="variable">THREAD_POOL_EXECUTOR</span></span><br><span class="line">        <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,</span><br><span class="line">                TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * An &#123;<span class="doctag">@link</span> Executor&#125; that executes tasks one at a time in serial</span></span><br><span class="line"><span class="comment"> * order.  This serialization is global to a particular process.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Executor</span> <span class="variable">SERIAL_EXECUTOR</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SerialExecutor</span>();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="type">Executor</span> <span class="variable">sDefaultExecutor</span> <span class="operator">=</span> SERIAL_EXECUTOR;</span><br></pre></td></tr></table></figure>
+<p>THREAD_POOL_EXECUTOR 支持并发，也就是说多个线程可以同时运行，SERIAL_EXECUTOR 是按照顺序执行，每次执行一个，而且默认的是这个顺序执行的 Executor。文档中介绍的时候建议将这个东西用来处理比较短小的后台任务，一定程度上也是因为这个原因。由于这个 Executor 和队列是 static 的，所以一旦你在某处加了一个比较耗时的任务进来，可能会导致其他地方的任务一直处在等待状态，所以对于一些长时间的后台操作，更适合使用 Executor，ThreadPoolExecutor 等 Java 本身的东西来实现。</p>
+<p>那么 THREAD_POOL_EXECUTOR 东西既然 new 出来，所以也不会没有用，AsyncTask 有一个 executeOnExecutor 方法，可以将这些 task 指定一个 Executor 来运行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">AsyncTask</span>().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span><br></pre></td></tr></table></figure>
+<p>当这样使用的时候就会出现多个线程同时运行的现象。</p>
+<p>这个类的另一个优势是可以操作 UI 线程。那么我们来看下他是怎么操作的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">InternalHandler</span> <span class="keyword">extends</span> <span class="title class_">Handler</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">InternalHandler</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(Looper.getMainLooper());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings(&#123;&quot;unchecked&quot;, &quot;RawUseOfParameterizedType&quot;&#125;)</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleMessage</span><span class="params">(Message msg)</span> &#123;</span><br><span class="line">        AsyncTaskResult&lt;?&gt; result = (AsyncTaskResult&lt;?&gt;) msg.obj;</span><br><span class="line">       <span class="keyword">switch</span> (msg.what) &#123;</span><br><span class="line">            <span class="keyword">case</span> MESSAGE_POST_RESULT:</span><br><span class="line">                <span class="comment">// There is only one result</span></span><br><span class="line">                result.mTask.finish(result.mData[<span class="number">0</span>]);</span><br><span class="line">               <span class="keyword">break</span>;</span><br><span class="line">           <span class="keyword">case</span> MESSAGE_POST_PROGRESS:</span><br><span class="line">               result.mTask.onProgressUpdate(result.mData);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">finish</span><span class="params">(Result result)</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (isCancelled()) &#123;</span><br><span class="line">          onCancelled(result);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          onPostExecute(result);</span><br><span class="line">      &#125;</span><br><span class="line">      mStatus = Status.FINISHED;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="title function_">execute</span><span class="params">(Params... params)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> executeOnExecutor(sDefaultExecutor, params);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="title function_">executeOnExecutor</span><span class="params">(Executor exec, Params... params)</span> &#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    mStatus = Status.RUNNING;</span><br><span class="line"></span><br><span class="line">    onPreExecute();</span><br><span class="line"></span><br><span class="line">    mWorker.mParams = params;</span><br><span class="line">    exec.execute(mFuture);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先有四个方法在 UI 线程执行：</p>
+<ul>
+<li>onPreExecute</li>
+<li>onPostExecute</li>
+<li>onProgressUpdate</li>
+<li>onCancelled</li>
+</ul>
+<p>在上面的代码中可以看到，onPreExecute 是放在 execute 中的，其他的是在 InternalHandler  中的，从 InternalHandler 的定义可以看出来他是 handle 在 UI 线程上的。到这里整个过程就比较清晰了，在后台运行中或者结束的时候去调用 handler 发送对应的 message 就可以调用到 UI 线程了。</p>
+<p>由于在 3.0 之后默认使用 SERIAL_EXECUTOR，所以在 v4 包中有一个 <a target="_blank" rel="noopener" href="http://developer.android.com/reference/android/support/v4/os/AsyncTaskCompat.html">AsyncTaskCompat</a>，他会根据系统版本帮你创建一个使用 THREAD_POOL_EXECUTOR 的 AsyncTask。</p>
+<h2 id="5-RxJava-和-EventBus-中的-UI-线程"><a href="#5-RxJava-和-EventBus-中的-UI-线程" class="headerlink" title="5.RxJava 和 EventBus 中的 UI 线程"></a>5.RxJava 和 EventBus 中的 UI 线程</h2><p>有了前面的铺垫，这里就变的好理解了很多。RxJava 和 EventBus 中都有让代码在 UI 线程和后台线程之间切换的能力，简单来说，当要使用 UI 线程的时候就用一个带 MainLooper 的 Handler 发消息就行了。在 EventBus 这一部分被封装成了一个 Poster，在 RxJava 中被封装了 HandlerScheduler。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// eventbus</span></span><br><span class="line">mainThreadPoster = <span class="keyword">new</span> <span class="title class_">HandlerPoster</span>(<span class="built_in">this</span>, Looper.getMainLooper(), <span class="number">10</span>);</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">HandlerPoster</span> <span class="keyword">extends</span> <span class="title class_">Handler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> PendingPostQueue queue;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> maxMillisInsideHandleMessage;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> EventBus eventBus;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> handlerActive;</span><br><span class="line"></span><br><span class="line">    HandlerPoster(EventBus eventBus, Looper looper, <span class="type">int</span> maxMillisInsideHandleMessage) &#123;</span><br><span class="line">    	<span class="comment">// handle looper</span></span><br><span class="line">        <span class="built_in">super</span>(looper);</span><br><span class="line">        <span class="built_in">this</span>.eventBus = eventBus;</span><br><span class="line">        <span class="built_in">this</span>.maxMillisInsideHandleMessage = maxMillisInsideHandleMessage;</span><br><span class="line">        queue = <span class="keyword">new</span> <span class="title class_">PendingPostQueue</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// RxJava</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">AndroidSchedulers</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">AndroidSchedulers</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>(<span class="string">&quot;No instances&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// See https://github.com/ReactiveX/RxAndroid/issues/238</span></span><br><span class="line">    <span class="comment">// https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">MainThreadSchedulerHolder</span> &#123;</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Scheduler</span> <span class="variable">MAIN_THREAD_SCHEDULER</span> <span class="operator">=</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">HandlerScheduler</span>(<span class="keyword">new</span> <span class="title class_">Handler</span>(Looper.getMainLooper()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** A &#123;<span class="doctag">@link</span> Scheduler&#125; which executes actions on the Android UI thread. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Scheduler <span class="title function_">mainThread</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Scheduler</span> <span class="variable">scheduler</span> <span class="operator">=</span></span><br><span class="line">                RxAndroidPlugins.getInstance().getSchedulersHook().getMainThreadScheduler();</span><br><span class="line">        <span class="keyword">return</span> scheduler != <span class="literal">null</span> ? scheduler : MainThreadSchedulerHolder.MAIN_THREAD_SCHEDULER;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>至于其他 io 或者是后台线程则是使用的前面说到的线程池实现。</p>
+<h2 id="6-小结"><a href="#6-小结" class="headerlink" title="6.小结"></a>6.小结</h2><p>Android 中的并发其实和 Java 差不多，并且在 Android 4.0 之后也使用了 JSR-133 的规范，一个主要区别就是有了 Handler 用于操作 UI 线程的东西。在了解了以上东西后，我们可以使用线程池配合 Handler 来完成很多操作，也可以写自己的异步任务的库来满足日常的开发需求，也帮助我们更好的理解了第三方开源库对异步的处理。下一部分则是具体看下 JSR-133 规范中关于并发的描述，还有我们平时使用的 synchronization 等关键字的原理和用途。</p>
+<p>References:<br><a target="_blank" rel="noopener" href="http://ifeve.com/wp-content/uploads/2014/03/JSR133%E4%B8%AD%E6%96%87%E7%89%88.pdf">JSR-133</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/java/j-lo-processthread/">Java 中的进程与线程</a><br><a target="_blank" rel="noopener" href="http://veerasundar.com/blog/2010/11/java-thread-local-how-to-use-and-code-sample/">Java Thread Local</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/Java-Android/" rel="tag"># Java Android</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2016/04/22/2016/2016-04-22-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/" rel="prev" title="依赖注入学习指南">
+      <i class="fa fa-chevron-left"></i> 依赖注入学习指南
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2016/05/18/2016/2016-05-18-Android%20%E4%B8%8E%E5%B9%B6%E5%8F%91%202/" rel="next" title="Android 与并发 2">
+      Android 与并发 2 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%B9%B6%E5%8F%91"><span class="nav-number">1.</span> <span class="nav-text">1.什么是并发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Thread-%E5%92%8C-Runnable"><span class="nav-number">2.</span> <span class="nav-text">2.Thread 和 Runnable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-ExecutorService"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 ExecutorService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 线程池</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Handler"><span class="nav-number">3.</span> <span class="nav-text">3.Handler</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Looper"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Looper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Handler-%E5%92%8C-Looper-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 Handler 和 Looper 的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Activity-%E4%B8%AD%E7%9A%84-Looper"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 Activity 中的 Looper</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-AsyncTask"><span class="nav-number">4.</span> <span class="nav-text">4.AsyncTask</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-RxJava-%E5%92%8C-EventBus-%E4%B8%AD%E7%9A%84-UI-%E7%BA%BF%E7%A8%8B"><span class="nav-number">5.</span> <span class="nav-text">5.RxJava 和 EventBus 中的 UI 线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%B0%8F%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">6.小结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Bill Lv</p>
+  <div class="site-description" itemprop="description">YESTERDAY YOU SAID TOMORROW</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bill Lv</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/blog/lib/anime.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

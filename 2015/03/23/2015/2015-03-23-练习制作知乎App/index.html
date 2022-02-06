@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+
+<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"lber19535.github.io","root":"/blog/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1. 前言出于希望对Android app开发有更深入的了解的目的，决定自己制作一个APP，选取的目标是平时比较常用的知乎app。为了方便，所有的数据获取采用模拟浏览器操作来获取（POST，GET请求），得到的数据有的是html和json两种。这篇blog用来记录这个app从无到有经历的过程，包括遇到的问题，对问题的思考等方面。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="练习制作APP">
+<meta property="og:url" content="https://lber19535.github.io/blog/2015/03/23/2015/2015-03-23-%E7%BB%83%E4%B9%A0%E5%88%B6%E4%BD%9C%E7%9F%A5%E4%B9%8EApp/index.html">
+<meta property="og:site_name" content="LOST HOME">
+<meta property="og:description" content="1. 前言出于希望对Android app开发有更深入的了解的目的，决定自己制作一个APP，选取的目标是平时比较常用的知乎app。为了方便，所有的数据获取采用模拟浏览器操作来获取（POST，GET请求），得到的数据有的是html和json两种。这篇blog用来记录这个app从无到有经历的过程，包括遇到的问题，对问题的思考等方面。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2015-03-23T17:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-06T14:23:36.283Z">
+<meta property="article:author" content="Bill Lv">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="CustomView">
+<meta property="article:tag" content="Demo">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://lber19535.github.io/blog/2015/03/23/2015/2015-03-23-%E7%BB%83%E4%B9%A0%E5%88%B6%E4%BD%9C%E7%9F%A5%E4%B9%8EApp/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>练习制作APP | LOST HOME</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LOST HOME</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">YESTERDAY YOU SAID TOMORROW</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://lber19535.github.io/blog/2015/03/23/2015/2015-03-23-%E7%BB%83%E4%B9%A0%E5%88%B6%E4%BD%9C%E7%9F%A5%E4%B9%8EApp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="name" content="Bill Lv">
+      <meta itemprop="description" content="YESTERDAY YOU SAID TOMORROW">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LOST HOME">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          练习制作APP
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-03-23 17:00:00" itemprop="dateCreated datePublished" datetime="2015-03-23T17:00:00+00:00">2015-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-02-06 14:23:36" itemprop="dateModified" datetime="2022-02-06T14:23:36+00:00">2022-02-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h2><p>出于希望对Android app开发有更深入的了解的目的，决定自己制作一个APP，选取的目标是平时比较常用的知乎app。为了方便，所有的数据获取采用模拟浏览器操作来获取（POST，GET请求），得到的数据有的是html和json两种。这篇blog用来记录这个app从无到有经历的过程，包括遇到的问题，对问题的思考等方面。</p>
+<span id="more"></span>
+
+<h2 id="2-准备"><a href="#2-准备" class="headerlink" title="2. 准备"></a>2. 准备</h2><h3 id="2-1-网络"><a href="#2-1-网络" class="headerlink" title="2.1 网络"></a>2.1 网络</h3><p>网络框架使用<a target="_blank" rel="noopener" href="http://developer.android.com/training/volley/index.html">Volley</a>，它对HttpURLConnection和HttpClient进行了适当的封装，使用回调函数处理Response，便捷的图片加载以及很强的可扩展性。<br>在做这个app的时候由于是要模拟浏览器行为，所以对request定制了UA，对httpclient定制了可以持久化的cookiestore，同时由于同一个cookie不能被多线程操作，所以又将Volley的线程池size设置为1，同时为了方便使用将Volley做成了单例，并且根据不同的接口封装了不同的回调方法，不同的接口中增加了对response返回值的处理，更方便在UI上方便使用。<br>JSON的解析使用自己写的Jeson工具，通过注解实现对对象和json之间的互相转化。<br>HTML的解析打算仿照Jeson写一个通过注解xpath配合jsoup来解析html文件。</p>
+<h4 id="2-1-1Gzip"><a href="#2-1-1Gzip" class="headerlink" title="2.1.1Gzip"></a>2.1.1Gzip</h4><p>由于Volley不支持Gzip，所以自稍微改了下对String部分的Request加了gzip的解压缩，图片部分gzip解压由系统自带的BitmapFactory完成。源文件有两个，一个是对StringRequest的<a target="_blank" rel="noopener" href="https://github.com/lber19535/ZhiHu/blob/master/app/src/main/java/com/bill/zhihu/api/net/GzipStringRequest.java">修改</a>,另一个是作为工具类使用解压为String的<a target="_blank" rel="noopener" href="https://github.com/lber19535/ZhiHu/blob/master/app/src/main/java/com/bill/zhihu/api/utils/GzipUtils.java">GzipUtils</a>。</p>
+<h3 id="2-2-缓存"><a href="#2-2-缓存" class="headerlink" title="2.2 缓存"></a>2.2 缓存</h3><ul>
+<li><strong>文件</strong><br><a target="_blank" rel="noopener" href="http://developer.android.com/training/volley/index.html">Volley</a>自带缓存<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/volley/+/android-5.1.0_r1/src/com/android/volley/toolbox/DiskBasedCache.java">DiskBasedCache</a>，通过Dispatcher需要cache的请求，将数据持久化。</li>
+<li><strong>cookie</strong><br>实现一个将cookie存到SharedPreference中的CookieStore。</li>
+<li><strong>数据库</strong><br>timeline的数据缓存到数据库中，当内存不足时，避免重新载入。</li>
+</ul>
+<h3 id="2-4-UI"><a href="#2-4-UI" class="headerlink" title="2.4 UI"></a>2.4 UI</h3><p>UI整体参考了官方的<a target="_blank" rel="noopener" href="http://www.google.com/design/spec/material-design">Material Design</a>,使用了一些v7包中的兼容控件</p>
+<h2 id="3-制作进度"><a href="#3-制作进度" class="headerlink" title="3 制作进度"></a>3 制作进度</h2><h3 id="2015-8-25更新（v0-1-0）"><a href="#2015-8-25更新（v0-1-0）" class="headerlink" title="2015.8.25更新（v0.1.0）"></a>2015.8.25更新（v0.1.0）</h3><p>经过五个月断断续续的开发，整个客户端实现了登录，timeline，问题列表，答案列表，答案详情，分享答案等常用功能。这期间对知乎web端的接口有了一定的了解，接下来了为了让开发和调试更方便，我打算重构代码，加入一些第三方的开源库加快开发速度。</p>
+<p><strong>重构</strong><br>当前代码是模仿浏览器进行web请求，获取内容解析然后显示，后来逐步的把这些请求整理到一起做成了ZhihuApi，现在把ZhihuApi这一大部分重项目中剥离出来，做成单独的module，由于Api对app的context有依赖，所以将以前使用的静态方法改为单例模式，既可以避免多次new对象，也可以对app中的context进行持有，使它不依赖某一个进程的上下文，如果以后api对资源使用比较大，也可通过这次分离出来的api做成独立process。下面是这次重构涉及到的几个方面：</p>
+<p>1.分离 Api 和 App 主体。(9.12 完成)<br>2.由于 Android 6.0 中去掉了对 HttpClient 的支持，这里要将之前使用 HttpClient 保存 Cookie 的方式改为 URLConnection 中对应的 CookieStore。(9.12 完成)<br>3.加入对崩溃异常的处理，收集异常并发送邮件给我，主要是收集logcat输出的东西。（使用了腾讯的 bugly 9.21完成）<br>4.对 Log和 Exception的处理需要优化，要保证可能出问题的地方有log，catch中有log中要尽量可以显示出来出问题的原因。（使用了腾讯的 bugly 9.21 完成）<br>5.将 Api 中处理本地数据的 Api（例如清除 Cookie，缓存等）和访问 Zhihu 的 Api 分开。(9.12 完成)</p>
+<p>用到的第三方库：<br>1.<a target="_blank" rel="noopener" href="https://github.com/pnikosis/materialish-progress">Material-ish Progress</a> MD 风格的Progress<br>2.<a target="_blank" rel="noopener" href="https://github.com/makovkastar/FloatingActionButton">FloatingActionButton</a> 悬浮按钮，和Android自带的相比多了对滑动隐藏&#x2F;显示的处理，使用简便<br>3.<a target="_blank" rel="noopener" href="http://jakewharton.github.io/butterknife/">Butter Knife</a> 使用注解自动绑定View、Click事件<br>4.<a target="_blank" rel="noopener" href="https://github.com/greenrobot/EventBus">EventBus</a> 事件总线，解耦组件</p>
+<h3 id="2015-9-12更新"><a href="#2015-9-12更新" class="headerlink" title="2015.9.12更新"></a>2015.9.12更新</h3><p>之前的重构完成了1、2、5部分，异常的处理和由于涉及到东西比较多了，放在这次完成。接下来的任务将是边重构边开发。这次的更新在 git 中加入了 v0.1.0 的 TAG，标志着 App 大概可以使用下了。版本分为 Api 部分和 App 部分，之后的更新这两个版本号可能会出现不一样的情况，这个比较正常。</p>
+<p><strong>重构</strong><br>由于初期程序不完善，异常比较多了，所以接下来的首要任务是加入对异常的记录反馈，方便分析。在之前的重构中发现 Api 部分的代码不是没有 app 部分的代码结构清晰，这个涉及到了之后新加接口是否简便的问题。</p>
+<p>1.加入对崩溃异常的处理，收集异常并发送邮件给我，主要是收集logcat输出的东西。（使用了腾讯的 bugly 9.21更新）<br>2.对 Log 和 Exception 的处理需要优化，要保证可能出问题的地方有log，catch中有log中要尽量可以显示出来出问题的原因。（使用了腾讯的 bugly 9.21更新）<br>3.Api 重构</p>
+<p><strong>功能</strong><br>1.赞同，反对<br>2.没有帮助<br>3.感谢<br>4.评论<br>5.问题+回答列表（原有的无法解析了，需要 debug 下问题）（9.20完成）<br>6.问题webview大小的优化，目前无法跟随内容调节大小<br>7.更新+消息推送（使用 umeng 集成下，这个简单）（9.12完成）</p>
+<h3 id="2015-9-21更新"><a href="#2015-9-21更新" class="headerlink" title="2015.9.21更新"></a>2015.9.21更新</h3><p><strong>重构</strong><br>1.使用数据库代替 SharePreference 来做 cookie 的持久化。(9.21 完成)</p>
+<p>用到的开源库：<br>1.<a target="_blank" rel="noopener" href="http://realm.io/">Realm</a> 用 C++ 做的跨平台的 ORM 框架<br>2.BUG 和 Crash 的反馈集成了腾讯的 <a target="_blank" rel="noopener" href="http://bugly.qq.com/">Bugly</a> 插件，简单好用。</p>
+<h3 id="2015-10-09更新"><a href="#2015-10-09更新" class="headerlink" title="2015.10.09更新"></a>2015.10.09更新</h3><p><strong>重构</strong><br>使用 MVP 模式对 app 部分进行重构，将 api 部分作为单独的进程，以减轻 app 端使用异步操作造成对象的频繁创建。<br><strong>功能</strong><br>1.完善readme，加入 gif 的演示</p>
+<h3 id="2015-12-05更新"><a href="#2015-12-05更新" class="headerlink" title="2015.12.05更新"></a>2015.12.05更新</h3><p>1.维持单进程思路，使用这两个月看的 RxJava，EventBus，MVVM，databinding 对项目进行重构，减少业务逻辑在 UI 层的比重，使用 RxJava 重新封装业务流程，将 model 部分分为数据库、网络 io 和本地 io 三部分。数据库用来持久化用户数据，网络 io 还是依靠 volley，本地 io 用来保存个人头像等。<br>2.重写解析 html 部分，封装解析操作：</p>
+<ul>
+<li>子元素列表</li>
+<li>元素内容</li>
+<li>元素属性</li>
+<li>节点失效检查</li>
+<li>删除多余节点，保留需要的节点</li>
+<li>加入更详细的 log 便于对解析错误的排查</li>
+</ul>
+<ol start="3">
+<li>由于项目加了混淆，所以要加入 bugly 符号表。</li>
+<li>加入解析 html 的 TestCase</li>
+<li>增加之前的功能</li>
+</ol>
+<h3 id="2016-4-6更新"><a href="#2016-4-6更新" class="headerlink" title="2016.4.6更新"></a>2016.4.6更新</h3><p><strong>进度</strong><br>1.使用了 RxJava，MVVM，databinding，retrofit 等对代码进行了重构<br>2.放弃了使用 volley，总体来说 volley 整个框架耦合度比较高，不如 retrofit灵活<br>3.反编译了官方 apk，现在所使用的都是官方接口，得到的是 json 对象，不需要 html 解析<br>4.加入了 bugly，leakcanary 用来持续改进 app<br>5.重新划分了 module，分为 app 本身和 api 部分，如果有机会的话可以将 api 单独发布<br><strong>功能</strong><br>1.答案列表<br>2.问题描述<br>3.评论，点赞等功能<br>4.加入 drawer 显示个人信息等东西<br>5.加入设置</p>
+<h3 id="2016-4-11更新"><a href="#2016-4-11更新" class="headerlink" title="2016.4.11更新"></a>2016.4.11更新</h3><p>1.移除了不用的库，只保留了 armeabi 和 x86 以减少 apk 文件体积<br>2.使用一些原生的控件代替原来的第三方控件，好处是可以使用统一的 style 并且减少 apk 体积</p>
+<!--
+app的一些想法：
+1.timeline加入 + 圆形按钮
+2.提供主题切换，返回最上层的功能。同时上滑隐藏，下滑出现。
+3.要加入对5.0特效的支持
+4.ForegroundColorSpan
+5.做一个像素鸟的彩蛋，主角改为刘看山
+
+-->
+
+
+<!--Volley-->
+<!--DiskBasedCache-->
+<!--Material Design-->
+<!--RecyclerView-->
+<!--Toolbar-->
+<!--SwipeRefreshLayout-->
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/Android/" rel="tag"># Android</a>
+              <a href="/blog/tags/CustomView/" rel="tag"># CustomView</a>
+              <a href="/blog/tags/Demo/" rel="tag"># Demo</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/blog/2015/03/31/2015/2015-03-31-%E9%A2%9C%E8%89%B2%E5%B7%A5%E5%85%B7/" rel="next" title="颜色工具">
+      颜色工具 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">1. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">2. 准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%BD%91%E7%BB%9C"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 网络</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1Gzip"><span class="nav-number">2.1.1.</span> <span class="nav-text">2.1.1Gzip</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%BC%93%E5%AD%98"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-UI"><span class="nav-number">2.3.</span> <span class="nav-text">2.4 UI</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%88%B6%E4%BD%9C%E8%BF%9B%E5%BA%A6"><span class="nav-number">3.</span> <span class="nav-text">3 制作进度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2015-8-25%E6%9B%B4%E6%96%B0%EF%BC%88v0-1-0%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">2015.8.25更新（v0.1.0）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2015-9-12%E6%9B%B4%E6%96%B0"><span class="nav-number">3.2.</span> <span class="nav-text">2015.9.12更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2015-9-21%E6%9B%B4%E6%96%B0"><span class="nav-number">3.3.</span> <span class="nav-text">2015.9.21更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2015-10-09%E6%9B%B4%E6%96%B0"><span class="nav-number">3.4.</span> <span class="nav-text">2015.10.09更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2015-12-05%E6%9B%B4%E6%96%B0"><span class="nav-number">3.5.</span> <span class="nav-text">2015.12.05更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2016-4-6%E6%9B%B4%E6%96%B0"><span class="nav-number">3.6.</span> <span class="nav-text">2016.4.6更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2016-4-11%E6%9B%B4%E6%96%B0"><span class="nav-number">3.7.</span> <span class="nav-text">2016.4.11更新</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Bill Lv</p>
+  <div class="site-description" itemprop="description">YESTERDAY YOU SAID TOMORROW</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bill Lv</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/blog/lib/anime.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

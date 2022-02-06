@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+
+<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"lber19535.github.io","root":"/blog/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="翻译自世界级的Android测试开发流程系列第四篇。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="世界级的Android测试开发流程 4">
+<meta property="og:url" content="https://lber19535.github.io/blog/2017/06/20/2017/2017-06-20-%E4%B8%96%E7%95%8C%E7%BA%A7%E7%9A%84Android%E6%B5%8B%E8%AF%95%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B%204/index.html">
+<meta property="og:site_name" content="LOST HOME">
+<meta property="og:description" content="翻译自世界级的Android测试开发流程系列第四篇。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-06-20T17:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-06T14:23:36.287Z">
+<meta property="article:author" content="Bill Lv">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="翻译">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://lber19535.github.io/blog/2017/06/20/2017/2017-06-20-%E4%B8%96%E7%95%8C%E7%BA%A7%E7%9A%84Android%E6%B5%8B%E8%AF%95%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B%204/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>世界级的Android测试开发流程 4 | LOST HOME</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LOST HOME</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">YESTERDAY YOU SAID TOMORROW</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://lber19535.github.io/blog/2017/06/20/2017/2017-06-20-%E4%B8%96%E7%95%8C%E7%BA%A7%E7%9A%84Android%E6%B5%8B%E8%AF%95%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B%204/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="name" content="Bill Lv">
+      <meta itemprop="description" content="YESTERDAY YOU SAID TOMORROW">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LOST HOME">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          世界级的Android测试开发流程 4
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-06-20 17:00:00" itemprop="dateCreated datePublished" datetime="2017-06-20T17:00:00+00:00">2017-06-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-02-06 14:23:36" itemprop="dateModified" datetime="2022-02-06T14:23:36+00:00">2022-02-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>翻译自<a target="_blank" rel="noopener" href="http://blog.karumi.com/world-class-testing-development-pipeline-for-android-part-4/">世界级的Android测试开发流程系列第四篇</a>。</p>
+<span id="more"></span>
+
+<p>在上一篇里我们讨论了如何测试服务端的 API，讨论了如何使用像 MockWebServer 的库来测试我们代码并达到以下目标：</p>
+<ul>
+<li>集成服务端 API 是开发中的重要一环</li>
+<li>身份认证流程和数据解析是测试的基础</li>
+<li>我们使用 Mock 方法替换服务端而不是替换客户端</li>
+<li>测试用来验证我们的服务是否像文档中描述的那样正常工作</li>
+</ul>
+<p>大部分的移动 APP 都是基于强大复杂的 UI 组件。这些组件用来显示各种信息给用户。没有这些组件我们的 APP 就是一个基于命令行的 APP。如果我们回想下曾经做过的 APP，我会得到一个结论，所有的 APP 都是从服务端获取信息并显示的前端。大部分开发 APP 的代码都是基于 Android SDK 的 UI 代码。这就是为什么我们认为 UI 层是软件中的核心组件并且会花更多的注意力去测试 UI 部分的代码。</p>
+<h1 id="1-测试-UI"><a href="#1-测试-UI" class="headerlink" title="1.测试 UI"></a>1.测试 UI</h1><p>当我们测试 UI 时需要注意下面几点：</p>
+<ul>
+<li>当 UI 加载的时候是否有显示正确的信息</li>
+<li>交互时产生正确的反馈信息</li>
+<li>显示正确的页面</li>
+</ul>
+<p>为了验证这三点我们需要一个虚拟机或真机的环境。当整个环境准备就绪后，我们可在用户界面执行不同的操作同时去判断是否显示正确的信息。为了测试 UI 是否正常工作，我们需要模拟一些交互的同时去判断 UI 组件的变化。</p>
+<p>为了能完全掌控测试场景，我们依然选用之前提到的测试替身。因此，减少了测试场景并让测试更加针对。通过测试替身我们可以控制程序中的所有数据，包括从用户登录到向用户展示的内容。有趣的一点是，可以使用假的数据而不用去联网。</p>
+<p>这个 <a target="_blank" rel="noopener" href="https://github.com/Karumi/KataSuperHeroesAndroid">Demo</a> 是最终的实现效果。这个小程序只有两个 Activity。第一个列出了超级英雄的列表，第二个展示对应的超级英雄的详细信息。</p>
+<p>我们将三个比较重要的用户操作来设计对应的测试。我们将模拟一个用户，对用户的操作执行一些断言。下面是我们要做的一些操作：</p>
+<ul>
+<li>点击用户界面</li>
+<li>滑动列表</li>
+<li>左右两边的滑动</li>
+</ul>
+<p>我们可以执行的断言：</p>
+<ul>
+<li>UI 元素的状态，visible or not</li>
+<li>UI 元素是否显示正确的文字内容</li>
+<li>是否有正确的错误信息</li>
+<li>加载内容的时候 progress bar 有没有正确显示</li>
+<li>列表显示是否正确</li>
+</ul>
+<p>我们可以使用 Dagger2 来替换生产环境的代码，使用 Espresso 执行对 UI 的操作并且执行断言。为了更方便的使用 Dagger2，我们要用 <a target="_blank" rel="noopener" href="https://github.com/fabioCollini/DaggerMock">DaggerMock</a> 这个 JUnit rule。</p>
+<p>写这个测试比较关键的一点是通过使用依赖注入我们可以在需要的时候配置测试替身。下面是配置 SuperHeroesRepository 在使用 getAll 方法时只返回一个超级英雄的例子。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(AndroidJUnit4.class)</span> <span class="meta">@LargeTest</span> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MainActivityTest</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">ANY_NUMBER_OF_SUPER_HEROES</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Rule</span> <span class="keyword">public</span> DaggerMockRule&lt;MainComponent&gt; daggerRule =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">DaggerMockRule</span>&lt;&gt;(MainComponent.class, <span class="keyword">new</span> <span class="title class_">MainModule</span>()).set(</span><br><span class="line">          <span class="keyword">new</span> <span class="title class_">DaggerMockRule</span>.ComponentSetter&lt;MainComponent&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setComponent</span><span class="params">(MainComponent component)</span> &#123;</span><br><span class="line">              <span class="type">SuperHeroesApplication</span> <span class="variable">app</span> <span class="operator">=</span></span><br><span class="line">                  (SuperHeroesApplication) InstrumentationRegistry.getInstrumentation()</span><br><span class="line">                      .getTargetContext()</span><br><span class="line">                      .getApplicationContext();</span><br><span class="line">              app.setComponent(component);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Rule</span> <span class="keyword">public</span> IntentsTestRule&lt;MainActivity&gt; activityRule =</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">IntentsTestRule</span>&lt;&gt;(MainActivity.class, <span class="literal">true</span>, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Mock</span> SuperHeroesRepository repository;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Test</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">showsEmptyCaseIfThereAreNoSuperHeroes</span><span class="params">()</span> &#123;</span><br><span class="line">    givenThereAreNoSuperHeroes();</span><br><span class="line"></span><br><span class="line">    startActivity();</span><br><span class="line"></span><br><span class="line">    onView(withText(<span class="string">&quot;¯\\_(?)_/¯&quot;</span>)).check(matches(isDisplayed()));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Test</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">showsSuperHeroesNameIfThereAreSuperHeroes</span><span class="params">()</span> &#123;</span><br><span class="line">    List&lt;SuperHero&gt; superHeroes = givenThereAreSomeSuperHeroes(ANY_NUMBER_OF_SUPER_HEROES);</span><br><span class="line"></span><br><span class="line">    startActivity();</span><br><span class="line"></span><br><span class="line">    RecyclerViewInteraction.&lt;SuperHero&gt;onRecyclerView(withId(R.id.recycler_view))</span><br><span class="line">        .withItems(superHeroes)</span><br><span class="line">        .check(<span class="keyword">new</span> <span class="title class_">RecyclerViewInteraction</span>.ItemViewAssertion&lt;SuperHero&gt;() &#123;</span><br><span class="line">          <span class="meta">@Override</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">check</span><span class="params">(SuperHero superHero, View view, NoMatchingViewException e)</span> &#123;</span><br><span class="line">            matches(hasDescendant(withText(superHero.getName()))).check(view, e);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">givenThereAreNoSuperHeroes</span><span class="params">()</span> &#123;</span><br><span class="line">    when(repository.getAll()).thenReturn(Collections.&lt;SuperHero&gt;emptyList());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一个测试在没有超级英雄的时候是否会显示空，第二个测试有超级英雄的时候名字是否显示正确。我们创建了两个不同的初始场景，用到了 Dagger2，DaggerMock 和 Espresso。使用这些工具可以用来测试 UI 上的行为是否正确。在测试的最后我们会判断 UI 是否显示正确的 mock 信息。需要注意的一点是让这些测试变为可能是依赖倒置原则。</p>
+<p>关于 Espresso 的使用也很有趣。我们可以使用 Espresso 的 API 通过 View 的 id 或显示的内容来执行一些操作或断言。Espresso 的 API 并不复杂，可以访问 <a target="_blank" rel="noopener" href="https://google.github.io/android-testing-support-library/docs/espresso/cheatsheet/">Espresso cheat sheet</a> 查看更多信息。</p>
+<p>另一个点是在测试 RecyclerView 时发现 Espresso 功能方面的缺失。在这个例子里我们使用 <a target="_blank" rel="noopener" href="https://gist.github.com/RomainPiel/ec10302a4687171a5e1a">gist</a> 中的代码，onData 这个接口还不支持 RecyclerView。即使有些瑕疵，Espresso 依然是我们可以用在 CI 中最好的 test 框架。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">opensSuperHeroDetailActivityOnRecyclerViewItemTapped</span><span class="params">()</span> &#123;</span><br><span class="line">    List&lt;SuperHero&gt; superHeroes = givenThereAreSomeSuperHeroes();</span><br><span class="line">    <span class="type">int</span> <span class="variable">superHeroIndex</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    startActivity();</span><br><span class="line"></span><br><span class="line">    onView(withId(R.id.recycler_view)).</span><br><span class="line">        perform(RecyclerViewActions.actionOnItemAtPosition(superHeroIndex, click()));</span><br><span class="line"></span><br><span class="line">    <span class="type">SuperHero</span> <span class="variable">superHeroSelected</span> <span class="operator">=</span> superHeroes.get(superHeroIndex);</span><br><span class="line">    intended(hasComponent(SuperHeroDetailActivity.class.getCanonicalName()));</span><br><span class="line">    intended(hasExtra(<span class="string">&quot;super_hero_name_key&quot;</span>, superHeroSelected.getName()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一旦我们测试过列表显示信息的正确性，接下来就是对应的跳转是否实现正确。在这个测试中我们建立了一个包含一些超级英雄的初始的场景然后执行点击其中一行的操作。当被点击的时候我们使用 Espresso 中的 Intents API 去检查打开的 SuperHeroDetailActivity 页面中的信息是否显示正确。这个方法用来测试导航是否有正确实现。另一个有效的方法是检查点击之后 UI 是否有显示那个详情的 Activity。</p>
+<h1 id="2-适用范围"><a href="#2-适用范围" class="headerlink" title="2.适用范围"></a>2.适用范围</h1><p>这个测试有比较广泛的适用范围。我们同时测试表现层和需要通过 Android SDK 作出反应显示信息给用户的代码。另一个有效的方法是基于使用依赖注入。遵守 MVP 模式并且写对应的测试代码，我们可以通过 mock View 层的实现来验证信息是否显示正确。但是要切记我们需要是用 MVP 或 MVVM 这样的模式，将所以表现层的逻辑移到框架之外。通过这种方法我们可以用 JVM 来测试代码逻辑而不用 Android 模拟器。</p>
+<h1 id="3-相关工具"><a href="#3-相关工具" class="headerlink" title="3.相关工具"></a>3.相关工具</h1><p>测试的基础是可测试的代码和依赖注入工具例如 Dagger or Dagger2。当然也可以不用依赖注入，但是需要用测试替身替换生产环境的代码。使用 DaggerMock 的规则可以简化依赖注入的初始化，但这个也不是强制使用。</p>
+<h1 id="4-结论"><a href="#4-结论" class="headerlink" title="4.结论"></a>4.结论</h1><p>当一个东西在 UI 测试中可以替换生产环境的代码时，我们就不需要使用测试替身和写不同的测试脚本了。实现这些就需要 Provisioning API，他的将测试替身转移到了服务端同时在测试前需要先配置 Provisioning Server。<br>使用这个篇文章中描述的方法可以方便的创建可重用的测试脚本，<a target="_blank" rel="noopener" href="https://github.com/square/okhttp/tree/master/mockwebserver">MockWebServer</a> 也可以用来实现这个测试，但是测试范围太大不值得这么做（看来是 MockWebServer 是个牛刀），同时我们还可以发现缓存机制的实现是否有问题。<br>如果你想查看前面提到的测试代码，可以访问 <a target="_blank" rel="noopener" href="https://github.com/Karumi/KataSuperHeroesAndroid">KataSuperHeroes</a>。我们强烈推荐 KataSuperHeroes 这个项目，如果是 iOS 开发者可以访问 <a target="_blank" rel="noopener" href="https://github.com/Karumi/KataSuperHeroesIOS">KataSuperHeroesIOS</a>。</p>
+<h2 id="5-个人总结"><a href="#5-个人总结" class="headerlink" title="5.个人总结"></a>5.个人总结</h2><p>作者是个西班牙人，由于是非英语系母语，所以文章有时候不是通顺，翻译的也不是太好。这个系列的文章给了个人开发者和小型开发团队关于测试方面一些很好的建议，非常的有价值。</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://blog.karumi.com/world-class-testing-development-pipeline-for-android-part-3/">World-Class Testing Development Pipeline for Android - Part 3.</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/square/okhttp/tree/master/mockwebserver">MockWebServer documentation. </a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Karumi/KataSuperHeroesAndroid">KataSuperHeroes for Android. </a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/google/dagger">Dagger2 documentation. </a></li>
+<li><a target="_blank" rel="noopener" href="https://google.github.io/android-testing-support-library/docs/espresso/index.html">Espresso documentation. </a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/fabioCollini/DaggerMock">DaggerMock documentation.</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/Android/" rel="tag"># Android</a>
+              <a href="/blog/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2017/06/02/2017/2017-06-02-Kotlin%20%E4%B8%AD%E7%9A%84%E9%BB%98%E8%AE%A4%E5%8F%82%E6%95%B0/" rel="prev" title="Kotlin 中的默认参数">
+      <i class="fa fa-chevron-left"></i> Kotlin 中的默认参数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2017/06/22/2017/2017-06-22-CheckboxPreference%20%E6%94%B9%E9%80%A0/" rel="next" title="CheckboxPreference 改造">
+      CheckboxPreference 改造 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%B5%8B%E8%AF%95-UI"><span class="nav-number">1.</span> <span class="nav-text">1.测试 UI</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="nav-number">2.</span> <span class="nav-text">2.适用范围</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7"><span class="nav-number">3.</span> <span class="nav-text">3.相关工具</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E7%BB%93%E8%AE%BA"><span class="nav-number">4.</span> <span class="nav-text">4.结论</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93"><span class="nav-number">4.1.</span> <span class="nav-text">5.个人总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">4.2.</span> <span class="nav-text">References</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Bill Lv</p>
+  <div class="site-description" itemprop="description">YESTERDAY YOU SAID TOMORROW</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bill Lv</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/blog/lib/anime.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

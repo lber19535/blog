@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+
+<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"lber19535.github.io","root":"/blog/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Spannable 是 Android 中用来给文字添加样式的接口，常见的子类的接口是 Editable, SpannableString, SpannableStringBuilder，这篇文章主要分析下 SpannableString, SpannableStringBuilder 以及他们是如何在 Textview 中起作用的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spannable 源码分析">
+<meta property="og:url" content="https://lber19535.github.io/blog/2016/11/23/2016/2016-11-23-Spannable%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="LOST HOME">
+<meta property="og:description" content="Spannable 是 Android 中用来给文字添加样式的接口，常见的子类的接口是 Editable, SpannableString, SpannableStringBuilder，这篇文章主要分析下 SpannableString, SpannableStringBuilder 以及他们是如何在 Textview 中起作用的。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-11-23T17:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-06T14:23:36.287Z">
+<meta property="article:author" content="Bill Lv">
+<meta property="article:tag" content="‘Android’">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://lber19535.github.io/blog/2016/11/23/2016/2016-11-23-Spannable%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Spannable 源码分析 | LOST HOME</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LOST HOME</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">YESTERDAY YOU SAID TOMORROW</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://lber19535.github.io/blog/2016/11/23/2016/2016-11-23-Spannable%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="name" content="Bill Lv">
+      <meta itemprop="description" content="YESTERDAY YOU SAID TOMORROW">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LOST HOME">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spannable 源码分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-23 17:00:00" itemprop="dateCreated datePublished" datetime="2016-11-23T17:00:00+00:00">2016-11-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-02-06 14:23:36" itemprop="dateModified" datetime="2022-02-06T14:23:36+00:00">2022-02-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a target="_blank" rel="noopener" href="https://developer.android.com/reference/android/text/Spannable.html">Spannable</a> 是 Android 中用来给文字添加样式的接口，常见的子类的接口是 <a target="_blank" rel="noopener" href="https://developer.android.com/reference/android/text/Editable.html">Editable</a>, <a href="SpannableString">SpannableString</a>, <a target="_blank" rel="noopener" href="https://developer.android.com/reference/android/text/SpannableStringBuilder.html">SpannableStringBuilder</a>，这篇文章主要分析下 SpannableString, SpannableStringBuilder 以及他们是如何在 Textview 中起作用的。</p>
+<span id="more"></span>
+<h2 id="1-Spannable"><a href="#1-Spannable" class="headerlink" title="1.Spannable"></a>1.Spannable</h2><p>Spannable 是一个接口，其中声明了如下两个方法, 下面主要介绍 setSpan 这个方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">removeSpan</span><span class="params">(Object what)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSpan</span><span class="params">(Object what, <span class="type">int</span> start, <span class="type">int</span> end, <span class="type">int</span> flags)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-1-SpannableString"><a href="#1-1-SpannableString" class="headerlink" title="1.1 SpannableString"></a>1.1 SpannableString</h3><p><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/text/SpannableString.java">SpannableString</a> 是由一个内部 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/text/SpannableStringInternal.java">SpannableStringInternal</a> 实现的, 所以我们就直接看 SpannableStringInternal 源码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* package */</span> </span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setSpan</span><span class="params">(Object what, <span class="type">int</span> start, <span class="type">int</span> end, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">nstart</span> <span class="operator">=</span> start;</span><br><span class="line">    <span class="type">int</span> <span class="variable">nend</span> <span class="operator">=</span> end;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 start 和 end 是否合法</span></span><br><span class="line">    checkRange(<span class="string">&quot;setSpan&quot;</span>, start, end);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对 SPAN_PARAGRAPH 做格式检查</span></span><br><span class="line">    <span class="keyword">if</span> ((flags &amp; Spannable.SPAN_PARAGRAPH) == Spannable.SPAN_PARAGRAPH) &#123;</span><br><span class="line">        <span class="keyword">if</span> (start != <span class="number">0</span> &amp;&amp; start != length()) &#123;</span><br><span class="line">            <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> charAt(start - <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (c != <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(</span><br><span class="line">                        <span class="string">&quot;PARAGRAPH span must start at paragraph boundary&quot;</span> +</span><br><span class="line">                        <span class="string">&quot; (&quot;</span> + start + <span class="string">&quot; follows &quot;</span> + c + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (end != <span class="number">0</span> &amp;&amp; end != length()) &#123;</span><br><span class="line">            <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> charAt(end - <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (c != <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(</span><br><span class="line">                        <span class="string">&quot;PARAGRAPH span must end at paragraph boundary&quot;</span> +</span><br><span class="line">                        <span class="string">&quot; (&quot;</span> + end + <span class="string">&quot; follows &quot;</span> + c + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 检查是否已经存在 span</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> mSpanCount;</span><br><span class="line">    Object[] spans = mSpans;</span><br><span class="line">    <span class="type">int</span>[] data = mSpanData;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (spans[i] == what) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">ostart</span> <span class="operator">=</span> data[i * COLUMNS + START];</span><br><span class="line">            <span class="type">int</span> <span class="variable">oend</span> <span class="operator">=</span> data[i * COLUMNS + END];</span><br><span class="line">            data[i * COLUMNS + START] = start;</span><br><span class="line">            data[i * COLUMNS + END] = end;</span><br><span class="line">            data[i * COLUMNS + FLAGS] = flags;</span><br><span class="line">            sendSpanChanged(what, ostart, oend, nstart, nend);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 检查数组大小</span></span><br><span class="line">    <span class="keyword">if</span> (mSpanCount + <span class="number">1</span> &gt;= mSpans.length) &#123;</span><br><span class="line">        Object[] newtags = ArrayUtils.newUnpaddedObjectArray(</span><br><span class="line">                GrowingArrayUtils.growSize(mSpanCount));</span><br><span class="line">        <span class="type">int</span>[] newdata = <span class="keyword">new</span> <span class="title class_">int</span>[newtags.length * <span class="number">3</span>];</span><br><span class="line">        System.arraycopy(mSpans, <span class="number">0</span>, newtags, <span class="number">0</span>, mSpanCount);</span><br><span class="line">        System.arraycopy(mSpanData, <span class="number">0</span>, newdata, <span class="number">0</span>, mSpanCount * <span class="number">3</span>);</span><br><span class="line">        mSpans = newtags;</span><br><span class="line">        mSpanData = newdata;</span><br><span class="line">    &#125;</span><br><span class="line">    mSpans[mSpanCount] = what;</span><br><span class="line">    mSpanData[mSpanCount * COLUMNS + START] = start;</span><br><span class="line">    mSpanData[mSpanCount * COLUMNS + END] = end;</span><br><span class="line">    mSpanData[mSpanCount * COLUMNS + FLAGS] = flags;</span><br><span class="line">    mSpanCount++;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span> <span class="keyword">instanceof</span> Spannable)</span><br><span class="line">        sendSpanAdded(what, nstart, nend);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先是通过 checkRange 方法检查 start 和 end 是否合法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">checkRange</span><span class="params">(<span class="keyword">final</span> String operation, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (end &lt; start) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IndexOutOfBoundsException</span>(operation + <span class="string">&quot; &quot;</span> +</span><br><span class="line">                                            region(start, end) +</span><br><span class="line">                                            <span class="string">&quot; has end before start&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> length();</span><br><span class="line">    <span class="keyword">if</span> (start &gt; len || end &gt; len) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IndexOutOfBoundsException</span>(operation + <span class="string">&quot; &quot;</span> +</span><br><span class="line">                                            region(start, end) +</span><br><span class="line">                                            <span class="string">&quot; ends beyond length &quot;</span> + len);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (start &lt; <span class="number">0</span> || end &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IndexOutOfBoundsException</span>(operation + <span class="string">&quot; &quot;</span> +</span><br><span class="line">                                            region(start, end) +</span><br><span class="line">                                            <span class="string">&quot; starts before 0&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来检查是否是 SPAN_PARAGRAPH, 当 flag 是 SPAN_PARAGRAPH 时, start 和 end 必须要是字符串的开头和结尾，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SpannableString</span> <span class="variable">ss</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SpannableString</span>(<span class="string">&quot;abcd&quot;</span>);</span><br><span class="line">ss.setSpan(<span class="keyword">new</span> <span class="title class_">UnderlineSpan</span>(), <span class="number">0</span>,<span class="number">4</span>, Spanned.SPAN_PARAGRAPH);</span><br></pre></td></tr></table></figure>
+
+<p>然后会检查是否已经存在了相同的 span 对象, 如果已经存在相同的 span, 那么就会用新的覆盖旧的, 所以在使用的时候要注意不要使用同一个对象:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SpannableString</span> <span class="variable">ss</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SpannableString</span>(<span class="string">&quot;abcd&quot;</span>);</span><br><span class="line"><span class="type">UnderlineSpan</span> <span class="variable">underlineSpan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UnderlineSpan</span>();</span><br><span class="line"></span><br><span class="line">ss.setSpan(underlineSpan, <span class="number">1</span>,<span class="number">2</span>, Spanned.SPAN_INCLUSIVE_INCLUSIVE);  <span class="comment">// 这个被覆盖了</span></span><br><span class="line">ss.setSpan(underlineSpan, <span class="number">3</span>,<span class="number">4</span>, Spanned.SPAN_INCLUSIVE_INCLUSIVE);</span><br></pre></td></tr></table></figure>
+
+<p>然后检查数组大小, 不够大时扩容, 最终将值保存起来, 保存的方式也很容易理解, 如下代码所示:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">START</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">END</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">FLAGS</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">COLUMNS</span> <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">mSpans[mSpanCount] = what;</span><br><span class="line">mSpanData[mSpanCount * COLUMNS + START] = start;</span><br><span class="line">mSpanData[mSpanCount * COLUMNS + END] = end;</span><br><span class="line">mSpanData[mSpanCount * COLUMNS + FLAGS] = flags;</span><br><span class="line">mSpanCount++;</span><br></pre></td></tr></table></figure>
+
+<p>到这里为止, 我们的 span 就被保存起来了。</p>
+<h3 id="2-2-SpannableStringBuilder"><a href="#2-2-SpannableStringBuilder" class="headerlink" title="2.2 SpannableStringBuilder"></a>2.2 SpannableStringBuilder</h3><p><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/text/SpannableStringBuilder.java">SpannableStringBuilder</a> 与 SpannableString 类似与 String 和 StringBuilder 之间的关系。SpannableStringBuilder 加入了 append, replace, delete 等方法，作用自不用多说，下面我们还是看下他的 setSpan:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSpan</span><span class="params">(Object what, <span class="type">int</span> start, <span class="type">int</span> end, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">    setSpan(<span class="literal">true</span>, what, start, end, flags);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Note: if send is false, then it is the caller&#x27;s responsibility to restore</span></span><br><span class="line"><span class="comment">// invariants. If send is false and the span already exists, then this method</span></span><br><span class="line"><span class="comment">// will not change the index of any spans.</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">setSpan</span><span class="params">(<span class="type">boolean</span> send, Object what, <span class="type">int</span> start, <span class="type">int</span> end, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">    <span class="comment">// 检查 start 和 end 是否合法</span></span><br><span class="line">    checkRange(<span class="string">&quot;setSpan&quot;</span>, start, end);</span><br><span class="line">    <span class="type">int</span> <span class="variable">flagsStart</span> <span class="operator">=</span> (flags &amp; START_MASK) &gt;&gt; START_SHIFT;</span><br><span class="line">    <span class="keyword">if</span>(isInvalidParagraphStart(start, flagsStart)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;PARAGRAPH span must start at paragraph boundary&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> <span class="variable">flagsEnd</span> <span class="operator">=</span> flags &amp; END_MASK;</span><br><span class="line">    <span class="keyword">if</span>(isInvalidParagraphEnd(end, flagsEnd)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;PARAGRAPH span must end at paragraph boundary&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 0-length Spanned.SPAN_EXCLUSIVE_EXCLUSIVE</span></span><br><span class="line">    <span class="keyword">if</span> (flagsStart == POINT &amp;&amp; flagsEnd == MARK &amp;&amp; start == end) &#123;</span><br><span class="line">        <span class="keyword">if</span> (send) &#123;</span><br><span class="line">            Log.e(TAG, <span class="string">&quot;SPAN_EXCLUSIVE_EXCLUSIVE spans cannot have a zero length&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Silently ignore invalid spans when they are created from this class.</span></span><br><span class="line">        <span class="comment">// This avoids the duplication of the above test code before all the</span></span><br><span class="line">        <span class="comment">// calls to setSpan that are done in this class</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 到这里都和之前的 SpannableString 没有什么区别</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// gap 的判断</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">nstart</span> <span class="operator">=</span> start;</span><br><span class="line">    <span class="type">int</span> <span class="variable">nend</span> <span class="operator">=</span> end;</span><br><span class="line">    <span class="keyword">if</span> (start &gt; mGapStart) &#123;</span><br><span class="line">        start += mGapLength;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (start == mGapStart) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flagsStart == POINT || (flagsStart == PARAGRAPH &amp;&amp; start == length()))</span><br><span class="line">            start += mGapLength;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (end &gt; mGapStart) &#123;</span><br><span class="line">        end += mGapLength;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (end == mGapStart) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flagsEnd == POINT || (flagsEnd == PARAGRAPH &amp;&amp; end == length()))</span><br><span class="line">            end += mGapLength;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查是否已经添加过</span></span><br><span class="line">    <span class="keyword">if</span> (mIndexOfSpan != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">index</span> <span class="operator">=</span> mIndexOfSpan.get(what);</span><br><span class="line">        <span class="keyword">if</span> (index != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> index;</span><br><span class="line">            <span class="type">int</span> <span class="variable">ostart</span> <span class="operator">=</span> mSpanStarts[i];</span><br><span class="line">            <span class="type">int</span> <span class="variable">oend</span> <span class="operator">=</span> mSpanEnds[i];</span><br><span class="line">            <span class="keyword">if</span> (ostart &gt; mGapStart)</span><br><span class="line">                ostart -= mGapLength;</span><br><span class="line">            <span class="keyword">if</span> (oend &gt; mGapStart)</span><br><span class="line">                oend -= mGapLength;</span><br><span class="line">            mSpanStarts[i] = start;</span><br><span class="line">            mSpanEnds[i] = end;</span><br><span class="line">            mSpanFlags[i] = flags;</span><br><span class="line">            <span class="keyword">if</span> (send) &#123;</span><br><span class="line">                restoreInvariants();</span><br><span class="line">                sendSpanChanged(what, ostart, oend, nstart, nend);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mSpans = GrowingArrayUtils.append(mSpans, mSpanCount, what);</span><br><span class="line">    mSpanStarts = GrowingArrayUtils.append(mSpanStarts, mSpanCount, start);</span><br><span class="line">    mSpanEnds = GrowingArrayUtils.append(mSpanEnds, mSpanCount, end);</span><br><span class="line">    mSpanFlags = GrowingArrayUtils.append(mSpanFlags, mSpanCount, flags);</span><br><span class="line">    mSpanOrder = GrowingArrayUtils.append(mSpanOrder, mSpanCount, mSpanInsertCount);</span><br><span class="line">    invalidateIndex(mSpanCount);</span><br><span class="line">    mSpanCount++;</span><br><span class="line">    mSpanInsertCount++;</span><br><span class="line">    <span class="comment">// Make sure there is enough room for empty interior nodes.</span></span><br><span class="line">    <span class="comment">// This magic formula computes the size of the smallest perfect binary</span></span><br><span class="line">    <span class="comment">// tree no smaller than mSpanCount.</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">sizeOfMax</span> <span class="operator">=</span> <span class="number">2</span> * treeRoot() + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (mSpanMax.length &lt; sizeOfMax) &#123;</span><br><span class="line">        mSpanMax = <span class="keyword">new</span> <span class="title class_">int</span>[sizeOfMax];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (send) &#123;</span><br><span class="line">        restoreInvariants();</span><br><span class="line">        sendSpanAdded(what, nstart, nend);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>开始的操作依然是检查 start end 越界和 paragraph。接下来是对 gap 缓冲做的处理：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">nstart</span> <span class="operator">=</span> start;</span><br><span class="line"><span class="type">int</span> <span class="variable">nend</span> <span class="operator">=</span> end;</span><br><span class="line"><span class="keyword">if</span> (start &gt; mGapStart) &#123;</span><br><span class="line">    start += mGapLength;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (start == mGapStart) &#123;</span><br><span class="line">    <span class="keyword">if</span> (flagsStart == POINT || (flagsStart == PARAGRAPH &amp;&amp; start == length()))</span><br><span class="line">        start += mGapLength;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (end &gt; mGapStart) &#123;</span><br><span class="line">    end += mGapLength;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (end == mGapStart) &#123;</span><br><span class="line">    <span class="keyword">if</span> (flagsEnd == POINT || (flagsEnd == PARAGRAPH &amp;&amp; end == length()))</span><br><span class="line">        end += mGapLength;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里会对 flags 有一个判断，当 flags 前后是 INCLUSIVE 且给的 start 和 end 是开头或结尾的时候，当这 append 的时候结尾或开始的字符串就会自动应用到这个 span。例如下面的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SpannableStringBuilder</span> <span class="variable">ssb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SpannableStringBuilder</span>(<span class="string">&quot;abcd&quot;</span>);</span><br><span class="line">ssb.setSpan(<span class="keyword">new</span> <span class="title class_">UnderlineSpan</span>(), <span class="number">1</span>, <span class="number">4</span>, Spanned.SPAN_POINT_POINT);</span><br><span class="line">ssb.append(<span class="string">&quot;aaaa&quot;</span>);</span><br><span class="line">ssb.append(<span class="string">&quot;aaaa&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>在 setSpan 的时候是对 “bcd” 部分加了下划线，当后面两次连续 append 之后，新加入的 “aaaaaaaa” 也被自动加入了下划线。</p>
+<p>这里对 gap 做一个解释，在 SpannableStringBuilder 创建的时候会建一个名为 mText 的 char[]，数组的 size 经过两个方法的处理就会得到一个合适大小的数组，数组在赋值后剩余出来的空间就是 gap buffer。大小合适的数组可以避免在 append 的过程中对数组频繁的 copy 操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">SpannableStringBuilder</span><span class="params">(CharSequence text, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">srclen</span> <span class="operator">=</span> end - start;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (srclen &lt; <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">StringIndexOutOfBoundsException</span>();</span><br><span class="line">    </span><br><span class="line">    mText = ArrayUtils.newUnpaddedCharArray(GrowingArrayUtils.growSize(srclen));</span><br><span class="line">    mGapStart = srclen;</span><br><span class="line">    mGapLength = mText.length - srclen;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// GrowingArrayUtils</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Given the current size of an array, returns an ideal size to which the array should grow.</span></span><br><span class="line"><span class="comment"> * This is typically double the given size, but should not be relied upon to do so in the</span></span><br><span class="line"><span class="comment"> * future.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">growSize</span><span class="params">(<span class="type">int</span> currentSize)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> currentSize &lt;= <span class="number">4</span> ? <span class="number">8</span> : currentSize * <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ArrayUtils</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">char</span>[] newUnpaddedCharArray(<span class="type">int</span> minLen) &#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="type">char</span>[])VMRuntime.getRuntime().newUnpaddedArray(<span class="type">char</span>.class, minLen);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns an array allocated in an area of the Java heap where it will never be moved.</span></span><br><span class="line"><span class="comment"> * This is used to implement native allocations on the Java heap, such as DirectByteBuffers</span></span><br><span class="line"><span class="comment"> * and Bitmaps.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> Object <span class="title function_">newNonMovableArray</span><span class="params">(Class&lt;?&gt; componentType, <span class="type">int</span> length)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>然后就是对 span 的检查，这一点的原理和 SpannableString 类似，也是重复使用的话只会保留最后设置的效果。下面操作就是对新加入的 span 的处理，同样使用构造函数中类似的对数组扩充的方式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">mSpans = GrowingArrayUtils.append(mSpans, mSpanCount, what);</span><br><span class="line">mSpanStarts = GrowingArrayUtils.append(mSpanStarts, mSpanCount, start);</span><br><span class="line">mSpanEnds = GrowingArrayUtils.append(mSpanEnds, mSpanCount, end);</span><br><span class="line">mSpanFlags = GrowingArrayUtils.append(mSpanFlags, mSpanCount, flags);</span><br><span class="line">mSpanOrder = GrowingArrayUtils.append(mSpanOrder, mSpanCount, mSpanInsertCount);</span><br><span class="line"><span class="comment">// 更新 mIndexOfSpan </span></span><br><span class="line">invalidateIndex(mSpanCount);</span><br><span class="line">mSpanCount++;</span><br><span class="line">mSpanInsertCount++;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Call this on any update to mSpans[], so that mIndexOfSpan can be updated</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">invalidateIndex</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">    mLowWaterMark = Math.min(i, mLowWaterMark);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// GrowingArrayUtils </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; T[] append(T[] array, <span class="type">int</span> currentSize, T element) &#123;</span><br><span class="line">    <span class="keyword">assert</span> currentSize &lt;= array.length;</span><br><span class="line">    <span class="keyword">if</span> (currentSize + <span class="number">1</span> &gt; array.length) &#123;</span><br><span class="line">        <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">        T[] newArray = ArrayUtils.newUnpaddedArray(</span><br><span class="line">                (Class&lt;T&gt;) array.getClass().getComponentType(), growSize(currentSize));</span><br><span class="line">        System.arraycopy(array, <span class="number">0</span>, newArray, <span class="number">0</span>, currentSize);</span><br><span class="line">        array = newArray;</span><br><span class="line">    &#125;</span><br><span class="line">    array[currentSize] = element;</span><br><span class="line">    <span class="keyword">return</span> array;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这些 span 被存在一个线性的数组中，数组的排序是按照 start 的值建立的满二叉树来实现的，做成这样也是为了查询的更快。在这里的公式 2 * treeRoot() + 1 可以算出当前树的最大节点数，例如根节点的下标是 3，那么这个满二叉树中节点个数就是 7。完整的二叉树定义以及如何使用可以看 treeRoot 和 calcMax 方法的注释：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Make sure there is enough room for empty interior nodes.</span></span><br><span class="line"><span class="comment">// This magic formula computes the size of the smallest perfect binary</span></span><br><span class="line"><span class="comment">// tree no smaller than mSpanCount.</span></span><br><span class="line"><span class="type">int</span> <span class="variable">sizeOfMax</span> <span class="operator">=</span> <span class="number">2</span> * treeRoot() + <span class="number">1</span>;</span><br><span class="line"><span class="keyword">if</span> (mSpanMax.length &lt; sizeOfMax) &#123;</span><br><span class="line">    mSpanMax = <span class="keyword">new</span> <span class="title class_">int</span>[sizeOfMax];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (send) &#123;</span><br><span class="line">    restoreInvariants();  <span class="comment">// 对二叉树进行</span></span><br><span class="line">    sendSpanAdded(what, nstart, nend);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The spans (along with start and end offsets and flags) are stored in linear arrays sorted</span></span><br><span class="line"><span class="comment">// by start offset. For fast searching, there is a binary search structure imposed over these</span></span><br><span class="line"><span class="comment">// arrays. This structure is inorder traversal of a perfect binary tree, a slightly unusual</span></span><br><span class="line"><span class="comment">// but advantageous approach.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// The value-containing nodes are indexed 0 &lt;= i &lt; n (where n = mSpanCount), thus preserving</span></span><br><span class="line"><span class="comment">// logic that accesses the values as a contiguous array. Other balanced binary tree approaches</span></span><br><span class="line"><span class="comment">// (such as a complete binary tree) would require some shuffling of node indices.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Basic properties of this structure: For a perfect binary tree of height m:</span></span><br><span class="line"><span class="comment">// The tree has 2^(m+1) - 1 total nodes.</span></span><br><span class="line"><span class="comment">// The root of the tree has index 2^m - 1.</span></span><br><span class="line"><span class="comment">// All leaf nodes have even index, all interior nodes odd.</span></span><br><span class="line"><span class="comment">// The height of a node of index i is the number of trailing ones in i&#x27;s binary representation.</span></span><br><span class="line"><span class="comment">// The left child of a node i of height h is i - 2^(h - 1).</span></span><br><span class="line"><span class="comment">// The right child of a node i of height h is i + 2^(h - 1).</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Note that for arbitrary n, interior nodes of this tree may be &gt;= n. Thus, the general</span></span><br><span class="line"><span class="comment">// structure of a recursive traversal of node i is:</span></span><br><span class="line"><span class="comment">// * traverse left child if i is an interior node</span></span><br><span class="line"><span class="comment">// * process i if i &lt; n</span></span><br><span class="line"><span class="comment">// * traverse right child if i is an interior node and i &lt; n</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">treeRoot</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Integer.highestOneBit(mSpanCount) - <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The span arrays are also augmented by an mSpanMax[] array that represents an interval tree</span></span><br><span class="line"><span class="comment">// over the binary tree structure described above. For each node, the mSpanMax[] array contains</span></span><br><span class="line"><span class="comment">// the maximum value of mSpanEnds of that node and its descendants. Thus, traversals can</span></span><br><span class="line"><span class="comment">// easily reject subtrees that contain no spans overlapping the area of interest.</span></span><br><span class="line"><span class="comment">// Note that mSpanMax[] also has a valid valuefor interior nodes of index &gt;= n, but which have</span></span><br><span class="line"><span class="comment">// descendants of index &lt; n. In these cases, it simply represents the maximum span end of its</span></span><br><span class="line"><span class="comment">// descendants. This is a consequence of the perfect binary tree structure.</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">calcMax</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-CharacterStyle"><a href="#3-CharacterStyle" class="headerlink" title="3.CharacterStyle"></a>3.CharacterStyle</h2><p>Span 有很多种，这里拿最简单的 CharacterStyle 来举例说明我们设置的 Span 最终是如何影响到文字绘制的。前面的代码中出现的 UnderlineSpan 就是 CharacterStyle 的子类之一，可以在<a target="_blank" rel="noopener" href="https://developer.android.com/reference/android/text/style/CharacterStyle.html">官网</a>上看到其他的子类。CharacterStyle 有一个抽象方法是 updateDrawState，下面是 UnderlineSpan 的简易版：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UnderlineSpan</span> <span class="keyword">extends</span> <span class="title class_">CharacterStyle</span> </span><br><span class="line">    <span class="keyword">implements</span> <span class="title class_">UpdateAppearance</span>, ParcelableSpan &#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateDrawState</span><span class="params">(TextPaint ds)</span> &#123;</span><br><span class="line">        ds.setUnderlineText(<span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从这个实现来看，在文字绘制的时候会将绘制文字的 TextPaint 传进来，在这里更新其设置后就能实现对应的文字效果。从 <a target="_blank" rel="noopener" href="https://github.com/7heaven/AndroidSdkSourceAnalysis/blob/master/article/textview%E6%BA%90%E7%A2%BC%E8%A7%A3%E6%9E%90.md">TextView源码分析</a> 中可以看出在对 Span 的处理上分为两步：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TextLine</span> <span class="variable">tl</span> <span class="operator">=</span> TextLine.obtain();</span><br><span class="line"></span><br><span class="line">tl.set(paint, buf, start, end, dir, directions, hasTabOrEmoji, tabStops);</span><br><span class="line">tl.draw(canvas, x, ltop, lbaseline, lbottom);</span><br></pre></td></tr></table></figure>
+<p>通过 TextLine.obtain() 从 shared pool 中获取一个 TextLine（这么做的原因是这个对象本身比较大而且使用次数多，为了避免多次创建导致的频繁 GC），然后通过 TextLine.set 对 TextLine 进行初始化，最后 draw 方法绘制出文字。从源码可以看出在 set 的时候保存了 Span：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">set</span><span class="params">(TextPaint paint, CharSequence text, <span class="type">int</span> start, <span class="type">int</span> limit, <span class="type">int</span> dir,</span></span><br><span class="line"><span class="params">            Directions directions, <span class="type">boolean</span> hasTabs, TabStops tabStops)</span> &#123;</span><br><span class="line">    mPaint = paint;</span><br><span class="line">    mText = text;</span><br><span class="line">    mStart = start;</span><br><span class="line">    mLen = limit - start;</span><br><span class="line">    mDir = dir;</span><br><span class="line">    mDirections = directions;</span><br><span class="line">    <span class="keyword">if</span> (mDirections == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Directions cannot be null&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    mHasTabs = hasTabs;</span><br><span class="line">    mSpanned = <span class="literal">null</span>;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">hasReplacement</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (text <span class="keyword">instanceof</span> Spanned) &#123;</span><br><span class="line">        mSpanned = (Spanned) text;   <span class="comment">// 保存 span</span></span><br><span class="line">        mReplacementSpanSpanSet.init(mSpanned, start, limit);</span><br><span class="line">        hasReplacement = mReplacementSpanSpanSet.numberOfSpans &gt; <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后是 draw 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">draw</span><span class="params">(Canvas c, <span class="type">float</span> x, <span class="type">int</span> top, <span class="type">int</span> y, <span class="type">int</span> bottom)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!mHasTabs) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mDirections == Layout.DIRS_ALL_LEFT_TO_RIGHT) &#123;</span><br><span class="line">            drawRun(c, <span class="number">0</span>, mLen, <span class="literal">false</span>, x, top, y, bottom, <span class="literal">false</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mDirections == Layout.DIRS_ALL_RIGHT_TO_LEFT) &#123;</span><br><span class="line">            drawRun(c, <span class="number">0</span>, mLen, <span class="literal">true</span>, x, top, y, bottom, <span class="literal">false</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span> <span class="type">float</span> <span class="title function_">drawRun</span><span class="params">(Canvas c, <span class="type">int</span> start,</span></span><br><span class="line"><span class="params">        <span class="type">int</span> limit, <span class="type">boolean</span> runIsRtl, <span class="type">float</span> x, <span class="type">int</span> top, <span class="type">int</span> y, <span class="type">int</span> bottom,</span></span><br><span class="line"><span class="params">        <span class="type">boolean</span> needWidth)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> ((mDir == Layout.DIR_LEFT_TO_RIGHT) == runIsRtl) &#123;</span><br><span class="line">        <span class="type">float</span> <span class="variable">w</span> <span class="operator">=</span> -measureRun(start, limit, limit, runIsRtl, <span class="literal">null</span>);</span><br><span class="line">        handleRun(start, limit, limit, runIsRtl, c, x + w, top,</span><br><span class="line">                y, bottom, <span class="literal">null</span>, <span class="literal">false</span>);</span><br><span class="line">        <span class="keyword">return</span> w;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> handleRun(start, limit, limit, runIsRtl, c, x, top,</span><br><span class="line">            y, bottom, <span class="literal">null</span>, needWidth);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">float</span> <span class="title function_">handleRun</span><span class="params">(<span class="type">int</span> start, <span class="type">int</span> measureLimit,</span></span><br><span class="line"><span class="params">            <span class="type">int</span> limit, <span class="type">boolean</span> runIsRtl, Canvas c, <span class="type">float</span> x, <span class="type">int</span> top, <span class="type">int</span> y,</span></span><br><span class="line"><span class="params">            <span class="type">int</span> bottom, FontMetricsInt fmi, <span class="type">boolean</span> needWidth)</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 解析 Span</span></span><br><span class="line">    mCharacterStyleSpanSet.init(mSpanned, mStart + start, mStart + limit);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i, jnext; j &lt; mlimit; j = jnext) &#123;</span><br><span class="line">        jnext = mCharacterStyleSpanSet.getNextTransition(mStart + j, mStart + inext) -</span><br><span class="line">                mStart;</span><br><span class="line">        <span class="type">int</span> <span class="variable">offset</span> <span class="operator">=</span> Math.min(jnext, mlimit);</span><br><span class="line">        wp.set(mPaint);</span><br><span class="line">        <span class="comment">// 遍历 Span</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">0</span>; k &lt; mCharacterStyleSpanSet.numberOfSpans; k++) &#123;</span><br><span class="line">            <span class="comment">// Intentionally using &gt;= and &lt;= as explained above</span></span><br><span class="line">            <span class="keyword">if</span> ((mCharacterStyleSpanSet.spanStarts[k] &gt;= mStart + offset) ||</span><br><span class="line">                    (mCharacterStyleSpanSet.spanEnds[k] &lt;= mStart + j)) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">CharacterStyle</span> <span class="variable">span</span> <span class="operator">=</span> mCharacterStyleSpanSet.spans[k];</span><br><span class="line">            span.updateDrawState(wp);  <span class="comment">// updateDrawState!!!</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Only draw hyphen on last run in line</span></span><br><span class="line">        <span class="keyword">if</span> (jnext &lt; mLen) &#123;</span><br><span class="line">            wp.setHyphenEdit(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        x += handleText(wp, j, jnext, i, inext, runIsRtl, c, x,</span><br><span class="line">                top, y, bottom, fmi, needWidth || jnext &lt; measureLimit, offset);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>几经周折到了 handleRun 这里，首先是 CharacterStyleSpanSet 的初始化，初始化的时候会将 mSpanned 中所带的 Span 都解析出来具体的过程可以看 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/SpanSet.java">SpanSet</a> 的源码，然后使用 updateDrawState 更新 TextPaint 加入想要的效果，最后通过 handleText 绘制。</p>
+<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4.总结"></a>4.总结</h2><p>Span 存储及调用的基本过程就是这样，更详细的 Span 使用可以看参考中的《Spans，一个强大的概念》这个文章或其原文《Spans, a Powerful Concept》。</p>
+<h2 id="5-参考"><a href="#5-参考" class="headerlink" title="5.参考"></a>5.参考</h2><p><a target="_blank" rel="noopener" href="http://ragnraok.github.io/textview-pre-render-research.html">TextView预渲染研究</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/7heaven/AndroidSdkSourceAnalysis/blob/master/article/textview%E6%BA%90%E7%A2%BC%E8%A7%A3%E6%9E%90.md">TextView源碼解析</a></p>
+<p><a target="_blank" rel="noopener" href="http://rocko.xyz/2015/03/04/%E3%80%90%E8%AF%91%E3%80%91Spans%EF%BC%8C%E4%B8%80%E4%B8%AA%E5%BC%BA%E5%A4%A7%E7%9A%84%E6%A6%82%E5%BF%B5/">Spans，一个强大的概念</a></p>
+<p><a target="_blank" rel="noopener" href="http://flavienlaurent.com/blog/2014/01/31/spans/">Spans, a Powerful Concept.</a></p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Gap_buffer">Gap buffer</a></p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%BA%8C%E5%8F%89%E6%A0%91">二叉树</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2016/11/11/2016/2016-11-11-PreferenceActivity%20%E4%B8%AD%E4%BD%BF%E7%94%A8%20ToolBar%20%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/" rel="prev" title="PreferenceActivity 中使用 ToolBar 时遇到的问题">
+      <i class="fa fa-chevron-left"></i> PreferenceActivity 中使用 ToolBar 时遇到的问题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2016/12/28/2016/2016-12-28-IMS%20%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="IMS 相关技术学习笔记">
+      IMS 相关技术学习笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Spannable"><span class="nav-number">1.</span> <span class="nav-text">1.Spannable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-SpannableString"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 SpannableString</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-SpannableStringBuilder"><span class="nav-number">1.2.</span> <span class="nav-text">2.2 SpannableStringBuilder</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-CharacterStyle"><span class="nav-number">2.</span> <span class="nav-text">3.CharacterStyle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">4.总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">5.参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Bill Lv</p>
+  <div class="site-description" itemprop="description">YESTERDAY YOU SAID TOMORROW</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bill Lv</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/blog/lib/anime.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+
+<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"lber19535.github.io","root":"/blog/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="依赖注入概念的学习以及 Dagger2 的使用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="依赖注入学习指南">
+<meta property="og:url" content="https://lber19535.github.io/blog/2016/04/22/2016/2016-04-22-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="LOST HOME">
+<meta property="og:description" content="依赖注入概念的学习以及 Dagger2 的使用。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-04-22T17:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-06T14:23:36.287Z">
+<meta property="article:author" content="Bill Lv">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://lber19535.github.io/blog/2016/04/22/2016/2016-04-22-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>依赖注入学习指南 | LOST HOME</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LOST HOME</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">YESTERDAY YOU SAID TOMORROW</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://lber19535.github.io/blog/2016/04/22/2016/2016-04-22-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="name" content="Bill Lv">
+      <meta itemprop="description" content="YESTERDAY YOU SAID TOMORROW">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LOST HOME">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          依赖注入学习指南
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-04-22 17:00:00" itemprop="dateCreated datePublished" datetime="2016-04-22T17:00:00+00:00">2016-04-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-02-06 14:23:36" itemprop="dateModified" datetime="2022-02-06T14:23:36+00:00">2022-02-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>依赖注入概念的学习以及 Dagger2 的使用。</p>
+<span id="more"></span>
+
+<h2 id="1-依赖注入"><a href="#1-依赖注入" class="headerlink" title="1.依赖注入"></a>1.依赖注入</h2><h3 id="1-1-什么是依赖"><a href="#1-1-什么是依赖" class="headerlink" title="1.1 什么是依赖"></a>1.1 什么是依赖</h3><p>我们先看一些例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// An example without dependency injection</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line">    <span class="comment">// Internal reference to the service used by this client</span></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Constructor</span></span><br><span class="line">    Client() &#123;</span><br><span class="line">        <span class="comment">// Specify a specific implementation in the constructor instead of using dependency injection</span></span><br><span class="line">        <span class="built_in">this</span>.service = <span class="keyword">new</span> <span class="title class_">ServiceExample</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Method within this client that uses the services</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Client 对象有一个成员变量 service，service 在构造函数中创建，所以 service 这个对象的创建在这里是由构造函数控制。这样的创建方式有一个问题，由于 Service 是一个接口，如果以后 Client 需要别的 Service 的实现的时候就需要改构造函数，这样不符合面向对象中封装变化的哲学。在这个例子中 Client 依赖于 service，所以说 service 是 Client 的依赖。</p>
+<h3 id="1-2-什么是依赖注入"><a href="#1-2-什么是依赖注入" class="headerlink" title="1.2 什么是依赖注入"></a>1.2 什么是依赖注入</h3><p>依赖注入不像前面例子中直接 new 的方式，而是将依赖的初始化放到了别的地方，一般来说依赖注入有三种方式：<br>1.通过构造方法<br>2.通过 set 方法<br>3.通过接口<br>其他的依赖注入就是各种依赖注入框架了，这个后面再说。</p>
+<p><strong>构造方法注入</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Constructor</span></span><br><span class="line">Client(Service service) &#123;</span><br><span class="line">    <span class="comment">// Save the reference to the passed-in service inside this client</span></span><br><span class="line">    <span class="built_in">this</span>.service = service;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过构造方法将已经创建好的 Service 对象传进来。</p>
+<p><strong>set 方法注入</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Setter method</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setService</span><span class="params">(Service service)</span> &#123;</span><br><span class="line">    <span class="comment">// Save the reference to the passed-in service inside this client</span></span><br><span class="line">    <span class="built_in">this</span>.service = service;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 set 方法传入初始化好的依赖</p>
+<p><strong>通过接口注入</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Service setter interface.</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ServiceSetter</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setService</span><span class="params">(Service service)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Client class</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> <span class="keyword">implements</span> <span class="title class_">ServiceSetter</span> &#123;</span><br><span class="line">    <span class="comment">// Internal reference to the service used by this client.</span></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Set the service that this client is to use.</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setService</span><span class="params">(Service service)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个和 set 方法的区别在于实现了 ServiceSetter 接口，所以初始化 Service 的工作可以交给单独负责 ServiceSetter 接口的类来处理，而这个类不需要知道他处理的是 Client 亦或是别的类型。</p>
+<p><strong>最后使用</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">Service</span> <span class="variable">service</span>  <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleService</span>();</span><br><span class="line">    <span class="type">Client</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Client</span>(service);</span><br><span class="line">    client.greet();</span><br><span class="line">        </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1-3-依赖注入框架"><a href="#1-3-依赖注入框架" class="headerlink" title="1.3 依赖注入框架"></a>1.3 依赖注入框架</h3><p>随着项目的增大，逻辑变得复杂，依赖增多，如何管理依赖就成了新的问题。随之诞生的就是依赖注入框架。依赖注入框架有很多种，比较著名的有 <a target="_blank" rel="noopener" href="http://projects.spring.io/spring-framework/">Spring</a>，<a target="_blank" rel="noopener" href="https://github.com/roboguice/roboguice/">RoboGuice</a>（读音是 juice），<a target="_blank" rel="noopener" href="http://jakewharton.github.io/butterknife/">Butter Knife</a>，<a target="_blank" rel="noopener" href="http://square.github.io/dagger/">Dagger</a>，<a target="_blank" rel="noopener" href="http://google.github.io/dagger/">Dagger2</a>，<a target="_blank" rel="noopener" href="http://androidannotations.org/">AndroidAnnotations</a>。 其中 RoboGuice 和 Spring 是运行期注入，其余的是编译期注入。</p>
+<p>Guice 是 Google 2006 年发布的一个依赖注入框架，他的原理是通过运行期的注解来生成依赖的图，然后通过反射生成相应的对象，这就带来两个问题，第一运行期调用反射生成对象是非常耗时，第二 Debug 的时候运行时注入会引入大量的注入方法导致难以调试或者方法栈太深找不到本身出问题的地方。后来 Google 发布了 Guice for android 也就是 RoboGuice，整体思想并没有改变，性能依旧感人，这里有个性能对比的<a target="_blank" rel="noopener" href="http://blog.nimbledroid.com/2016/03/07/performance-of-dependency-injection-libraries-zh.html">连接</a>，感兴趣的可以看下差距。</p>
+<p>正因为有了这么多痛苦的所以才有了诸如 Dagger 这种编译期注入的框架。编译期注入框架的思想是在编译期生成对应的工厂，通过运行期生成的依赖图和反射去调用工厂进行依赖注入，这样的好处是没有了通过反射去 new 对象的开销，debug 也只是看到调用自动生成的工厂方法而且有源码可以查看调试更方便。后来 Google fork 了 Dagger 项目做了 Dagger2， 将依赖关系也放到了编译期确认，这样运行时确认依赖关系的开销也没有了，性能再一次提升，同时运行期的注入不再依赖反射，这样就可以使用 ProGuard 来优化代码。</p>
+<h2 id="2-Dagger2"><a href="#2-Dagger2" class="headerlink" title="2.Dagger2"></a>2.Dagger2</h2><p>目前 Android 上主流的注入框架就是 Dagger 系列了，Dagger 本来是 Square 的一个开源项目，后来 Google fork 出来做了一些改进，变成了现在的 Dagger2。下面就来看下 Dagger2 怎么用。</p>
+<h3 id="2-1-如何使用"><a href="#2-1-如何使用" class="headerlink" title="2.1 如何使用"></a>2.1 如何使用</h3><p>先来看下完整的代码，这里使用构造方法注入：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleService</span> <span class="keyword">implements</span> <span class="title class_">Service</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">TAG</span> <span class="operator">=</span> <span class="string">&quot;SimpleService&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SimpleService</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getServiceName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> TAG;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">(SimpleService service)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">AppComponent</span> &#123;</span><br><span class="line">    Client <span class="title function_">makeClient</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>最后使用</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">   <span class="type">AppComponent</span> <span class="variable">appComponent</span> <span class="operator">=</span> DaggerAppComponent.create();</span><br><span class="line">   <span class="type">Client</span> <span class="variable">client</span> <span class="operator">=</span> appComponent.makeClient();</span><br><span class="line">   client.greet();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为是编译期注入，所以编译器会帮我们生成一个 DaggerAppComponent 的类，我们通过这个类 create AppComponent 来执行注入的过程，通过 AppComponent 的 makeClient 接口获得实例。这里有一个好处就是当依赖和注入的地方过多时，我们就不需要手动注入了，只需要通过给依赖和注入方法加对应的 Inject 注解，最后就可以自动完成注入了。下面我们看下这个几个注解的意思。</p>
+<h3 id="2-2-注解"><a href="#2-2-注解" class="headerlink" title="2.2 注解"></a>2.2 注解</h3><p>Dagger2 的注解来自于 Java 依赖注入标准（JSR-330），并没有额外的新的注解.</p>
+<h4 id="2-2-1-Inject"><a href="#2-2-1-Inject" class="headerlink" title="2.2.1 Inject"></a>2.2.1 Inject</h4><p>Inject 用于注解可注入的方法和变量或者是构造方法，当注解构造方法时表示这个类既是依赖也是被注入的对象。对于无参的构造方法来说，这个类就单纯的作为依赖被注入到别的类中了。<br>注入方式在前面说了有很多种，在这里其实就是构造方法的注入，普通方法的注入和变量的注入，下面分别展示下写法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造方法注入</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">(SimpleService service)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// set 方法注入</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setService</span><span class="params">(Service service)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接注入</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>直接注入有一些限制，例如变量不能是 private 的，否则访问不到，直接裸露变量也不符合面向对象的思想等等。通常来说使用构造方法和 set 方法。</p>
+<h4 id="2-2-2-Module-和-Provides"><a href="#2-2-2-Module-和-Provides" class="headerlink" title="2.2.2 Module 和 Provides"></a>2.2.2 Module 和 Provides</h4><p>Module 用于注解提供依赖的类，例如一些依赖是外部的，Module 中的方法可以用 Provides 注解，被注解的方法的返回值用来提供依赖，参数可以是被 Inject 注解过的实例或同一个 Component 下的别的依赖。<strong>当 Module 和 Inject 提供同一个依赖的时候，Dagger2 会选择使用 Inject 提供的依赖</strong>，所以依赖的使用顺序是优先 Inject 中的，然后是 Module 中的。下面是示例代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ServiceModule</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="keyword">static</span> Service <span class="title function_">provideSimpleService</span><span class="params">(SimpleService service)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> service;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleService</span> <span class="keyword">implements</span> <span class="title class_">Service</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">TAG</span> <span class="operator">=</span> <span class="string">&quot;SimpleService&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SimpleService</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getServiceName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> TAG;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setService</span><span class="params">(Service service)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于 set 方法使用了 Service 接口，所以 Dagger 无法知道需要哪个实现来注入，这时候就会去找 Module 中的 Provide 方法，Provide 方法提供了 Service 实例所以就调用了这个 Provide 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">(SimpleService service)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当写成这样，明确指出了注入的类的时候，Dagger 就直接在 Inject 注解的类中找到了。</p>
+<h4 id="2-2-3-Component"><a href="#2-2-3-Component" class="headerlink" title="2.2.3 Component"></a>2.2.3 Component</h4><p>Component 是 Module 和 Injection 之间的桥梁，可以充当 Injector，也是实现 Scope 的地方。桥梁的作用自然不用说了最开始的那个例子里就是充当桥梁，充当 Injector 是将 Component 中的依赖注入到别的地方，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Client client;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">AppComponent</span> <span class="variable">appComponent</span> <span class="operator">=</span> DaggerAppComponent.create();</span><br><span class="line">        <span class="type">App</span> <span class="variable">app</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">App</span>();</span><br><span class="line">        appComponent.inject(app);</span><br><span class="line"></span><br><span class="line">        app.getClient().greet();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Client <span class="title function_">getClient</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component(modules = ServiceModule.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">AppComponent</span> &#123;</span><br><span class="line">    Client <span class="title function_">makeClient</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">inject</span><span class="params">(App app)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里通过 Component 注入 app 来获取 Client 对象。</p>
+<h4 id="2-2-4-Scope"><a href="#2-2-4-Scope" class="headerlink" title="2.2.4 Scope"></a>2.2.4 Scope</h4><p>Scope 这个注解属于抽象上的东西，Dagger2 自带的一个 Scope 就是 Singleton。这里先来说说 Singleton 这个注解。先看下 Singleton 的源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Scope</span></span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Retention(RUNTIME)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Singleton &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>很普通的定义嘛，下面是一个官网的例子，我们看下怎么用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Singleton</span></span><br><span class="line"><span class="meta">@Component(modules = &#123;DripCoffeeModule.class&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Coffee</span> &#123;</span><br><span class="line">    CoffeeMaker <span class="title function_">maker</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Provides</span></span><br><span class="line"><span class="meta">@Singleton</span></span><br><span class="line">Pump <span class="title function_">providePump</span><span class="params">(Thermosiphon pump)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> pump;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其他的依赖就不再写出了，就是名字不一样，Singleton 注解在了 Provide 和 Component 上，那么表示了这个 Component 中的 Pump 对象都是相同，也就是单例的效果，如果没有 Singleton 那么每次 provide 的 Pump 都是一个新的对象。但是这里的单例作用范围仅限这个 Component，它的原理使用 ScopedProvider 中的一个变量来保存这个生成的 pump 对象，每次 get 的时候检查这个对象是不是创建过了。正如 Singleton 一样，自定义的 Scope 效果和它一样，只是名字不一样，所以自定义的 Scope 是为了抽象上更为方便的划分 Component 而不需要去加 Singleton 这种含义单一的注解。</p>
+<h3 id="2-3-原理"><a href="#2-3-原理" class="headerlink" title="2.3 原理"></a>2.3 原理</h3><p>Dagger2 的原理也比较简单，主要是在编译期生成一堆 Factory 来帮你完成自动的注入，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Service service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Client</span><span class="params">(SimpleService service)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.service = service;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">greet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello &quot;</span> + service.getServiceName());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Client_Factory</span> <span class="keyword">implements</span> <span class="title class_">Factory</span>&lt;Client&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Provider&lt;SimpleService&gt; serviceProvider;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Client_Factory</span><span class="params">(Provider&lt;SimpleService&gt; serviceProvider)</span> &#123;</span><br><span class="line">    <span class="keyword">assert</span> serviceProvider != <span class="literal">null</span>;</span><br><span class="line">    <span class="built_in">this</span>.serviceProvider = serviceProvider;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> Client <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Client</span>(serviceProvider.get());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Factory&lt;Client&gt; <span class="title function_">create</span><span class="params">(Provider&lt;SimpleService&gt; serviceProvider)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Client_Factory</span>(serviceProvider);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为我们 Inject 了 Client 对象，所以这里有一个对应的工厂帮我们生成 Client 对象，同时这个 Client 对象需要一个 Service，所以这里又有了 Service 的工厂：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleService</span> <span class="keyword">implements</span> <span class="title class_">Service</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">TAG</span> <span class="operator">=</span> <span class="string">&quot;SimpleService&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SimpleService</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getServiceName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> TAG;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">SimpleService_Factory</span> <span class="keyword">implements</span> <span class="title class_">Factory</span>&lt;SimpleService&gt; &#123;</span><br><span class="line">  INSTANCE;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> SimpleService <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SimpleService</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Factory&lt;SimpleService&gt; <span class="title function_">create</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到 Service 的创建没有别的依赖。最后就是 Component 了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">AppComponent</span> &#123;</span><br><span class="line">    Client <span class="title function_">makeClient</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">DaggerAppComponent</span> <span class="keyword">implements</span> <span class="title class_">AppComponent</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> Provider&lt;Client&gt; clientProvider;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="title function_">DaggerAppComponent</span><span class="params">(Builder builder)</span> &#123;</span><br><span class="line">    <span class="keyword">assert</span> builder != <span class="literal">null</span>;</span><br><span class="line">    initialize(builder);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Builder <span class="title function_">builder</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Builder</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> AppComponent <span class="title function_">create</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> builder().build();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initialize</span><span class="params">(<span class="keyword">final</span> Builder builder)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">this</span>.clientProvider = Client_Factory.create(SimpleService_Factory.create());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> Client <span class="title function_">makeClient</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> clientProvider.get();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Builder</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Builder</span><span class="params">()</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> AppComponent <span class="title function_">build</span><span class="params">()</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DaggerAppComponent</span>(<span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>DaggerAppComponent 是 AppComponent 的实现类,在 initialize 函数中初始化了 Client 的工厂，之后的 makeClient 返回的对象就是通过工厂创建的。在这里 makeClient 调用 Client 工厂的 get 方法，每次都会 new 一个新的 Client。加了 Scope 注解的初始化会和这里稍有不同：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initialize</span><span class="params">(<span class="keyword">final</span> Builder builder)</span> &#123;</span><br><span class="line">   <span class="built_in">this</span>.clientProvider = ScopedProvider.create(Client_Factory.create(SimpleService_Factory.create()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里由原来的工厂变成了 ScopedProvider：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ScopedProvider</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Provider</span>&lt;T&gt;, Lazy&lt;T&gt; &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="variable">UNINITIALIZED</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Factory&lt;T&gt; factory;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> UNINITIALIZED;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="title function_">ScopedProvider</span><span class="params">(Factory&lt;T&gt; factory)</span> &#123;</span><br><span class="line">    <span class="keyword">assert</span> factory != <span class="literal">null</span>;</span><br><span class="line">    <span class="built_in">this</span>.factory = factory;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span> <span class="comment">// cast only happens when result comes from the factory</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> T <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// double-check idiom from EJ2: Item 71</span></span><br><span class="line">    <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> instance;</span><br><span class="line">    <span class="keyword">if</span> (result == UNINITIALIZED) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span> (<span class="built_in">this</span>) &#123;</span><br><span class="line">        result = instance;</span><br><span class="line">        <span class="keyword">if</span> (result == UNINITIALIZED) &#123;</span><br><span class="line">          instance = result = factory.get();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (T) result;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Returns a new scoped provider for the given factory. */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; Provider&lt;T&gt; <span class="title function_">create</span><span class="params">(Factory&lt;T&gt; factory)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (factory == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ScopedProvider</span>&lt;T&gt;(factory);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里我们可以看到在 get 的部分用单例的机制保证了我们每次拿到的 Client 都是同样的。</p>
+<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3.总结"></a>3.总结</h2><p>依赖注入框架帮你生成各种依赖的工厂，完成自动注入，省去了管理依赖和手写工厂的麻烦，编译期注入又很好的解决了性能问题。<br>Java 版的 Demo 放到了 <a target="_blank" rel="noopener" href="https://github.com/lber19535/Dagger2Demo">Github</a> 上。另外还使用 MVP 和 Dagger2 结合 Github 的 Api 做了一个获取 Commit 信息的 Android 的 <a target="_blank" rel="noopener" href="https://github.com/lber19535/AndroidDemo/tree/master/app/src/main/java/com/example/bill/third/dagger2">Demo</a>。</p>
+<p>References:<br><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dependency_injection">DI Wiki</a><br><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=plK0zyRLIP8">The Future of Dependency Injection with Dagger 2</a><br><a target="_blank" rel="noopener" href="http://google.github.io/dagger/users-guide.html">Dagger2 User Guide</a><br><a target="_blank" rel="noopener" href="https://speakerdeck.com/jakewharton/dependency-injection-with-dagger-2-devoxx-2014">dependency-injection-with-dagger-2-devoxx-2014</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2016/04/13/2016/2016-04-13-%20Android%20Design%20%E7%9A%84%E4%BD%BF%E7%94%A8/" rel="prev" title="Android Design 的使用">
+      <i class="fa fa-chevron-left"></i> Android Design 的使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2016/05/04/2016/2016-05-04-Android%20%E4%B8%8E%E5%B9%B6%E5%8F%91%201/" rel="next" title="Android 与并发 1">
+      Android 与并发 1 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">1.依赖注入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E4%BE%9D%E8%B5%96"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 什么是依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E4%BB%80%E4%B9%88%E6%98%AF%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 什么是依赖注入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E6%A1%86%E6%9E%B6"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 依赖注入框架</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Dagger2"><span class="nav-number">2.</span> <span class="nav-text">2.Dagger2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 如何使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%B3%A8%E8%A7%A3"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 注解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-Inject"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 Inject</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-Module-%E5%92%8C-Provides"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2 Module 和 Provides</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-3-Component"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.2.3 Component</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-4-Scope"><span class="nav-number">2.2.4.</span> <span class="nav-text">2.2.4 Scope</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%8E%9F%E7%90%86"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">3.总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Bill Lv</p>
+  <div class="site-description" itemprop="description">YESTERDAY YOU SAID TOMORROW</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bill Lv</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/blog/lib/anime.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

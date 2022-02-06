@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+
+<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"lber19535.github.io","root":"/blog/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Retrofit 设计的如此精巧，那么就让我们来看看他是怎么做的吧。这篇文章主要分析 Retrofit 2 的源码，并不会涉及到和 Retrofit 1 的比较等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Retrofit 源码分析">
+<meta property="og:url" content="https://lber19535.github.io/blog/2015/12/25/2015/2015-12-25-Retrofit%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="LOST HOME">
+<meta property="og:description" content="Retrofit 设计的如此精巧，那么就让我们来看看他是怎么做的吧。这篇文章主要分析 Retrofit 2 的源码，并不会涉及到和 Retrofit 1 的比较等。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2015-12-25T17:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-06T14:23:36.287Z">
+<meta property="article:author" content="Bill Lv">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://lber19535.github.io/blog/2015/12/25/2015/2015-12-25-Retrofit%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Retrofit 源码分析 | LOST HOME</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LOST HOME</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">YESTERDAY YOU SAID TOMORROW</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://lber19535.github.io/blog/2015/12/25/2015/2015-12-25-Retrofit%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="name" content="Bill Lv">
+      <meta itemprop="description" content="YESTERDAY YOU SAID TOMORROW">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LOST HOME">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Retrofit 源码分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-12-25 17:00:00" itemprop="dateCreated datePublished" datetime="2015-12-25T17:00:00+00:00">2015-12-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-02-06 14:23:36" itemprop="dateModified" datetime="2022-02-06T14:23:36+00:00">2022-02-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Retrofit 设计的如此精巧，那么就让我们来看看他是怎么做的吧。这篇文章主要分析 Retrofit 2 的源码，并不会涉及到和 Retrofit 1 的比较等。</p>
+<span id="more"></span>
+
+<h2 id="1-代理模式"><a href="#1-代理模式" class="headerlink" title="1.代理模式"></a>1.代理模式</h2><p>Retrofit 通过代理模式让接口得以执行，简化了定义网络操作的过程，这里我们先简单说一下代理模式。代理模式通过创建一个对象的代理，让代理来执行操作而不用对象来执行操作，Retrofit 使用中我们定义的都是接口，通过代理模式可以创建接口的代理，从而实现执行接口的操作。</p>
+<h3 id="1-1-如何使用"><a href="#1-1-如何使用" class="headerlink" title="1.1 如何使用"></a>1.1 如何使用</h3><p>Java 中的 Proxy 用来提供动态代理，Proxy 通过静态方法 newProxyInstance 方法获取一个目标对象的代理，这个方法需要被代理对象的 ClassLoader，接口数组，和一个 InvocationHandler 对象，InvocationHandler 对象中的 invoke 方法是代理被调用时实际调用的方法。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Hello</span> &#123;</span><br><span class="line">    String <span class="title function_">hello</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloImpl</span> <span class="keyword">implements</span> <span class="title class_">Hello</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">hello</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello word&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;xxx&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Object target;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">HelloHandler</span><span class="params">(Object target)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> method.invoke(target, args);</span><br><span class="line">        <span class="keyword">return</span> obj;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">Hello</span> <span class="variable">hello</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HelloImpl</span>();</span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HelloHandler</span>(hello);</span><br><span class="line"></span><br><span class="line">        <span class="type">Hello</span> <span class="variable">proxy</span> <span class="operator">=</span> (Hello) Proxy.newProxyInstance(</span><br><span class="line">                hello.getClass().getClassLoader(),</span><br><span class="line">                hello.getClass().getInterfaces(),</span><br><span class="line">                handler);</span><br><span class="line"></span><br><span class="line">        proxy.hello();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终 proxy 调用 hello 方法的时候实际调用的是 InvocationHandler 中的 invoke 方法，invoke 的返回值就是调用真实方法的返回值，如果返回值是 void，那么这里可以直接返回一个 null。至于 InvocationHandler 如何写就要看你到底想要执行什么方法了，如果是想执行 hello 对象的方法，那就需要像上面这样把对象传进来然后用 invoke 方法来执行。<br>但是，在 Retrofit 中使用的是接口，所以并不需要传来对象，所以就用下面这种写法来执行接口的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Hello</span> <span class="variable">proxy</span> <span class="operator">=</span> (Hello) Proxy.newProxyInstance(Hello.class.getClassLoader(), <span class="keyword">new</span> <span class="title class_">Class</span>&lt;?&gt;[]&#123;Hello.class&#125;, <span class="keyword">new</span> <span class="title class_">InvocationHandler</span>() &#123;</span><br><span class="line">            <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                System.out.println(method.getName());</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        proxy.hello();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个例子中可以看到并没有继承 Hello 来做一个子类去生成对象，而是直接使用 Hello 这个接口生成了一个代理对象，这个对象在执行的时候就会执行 invoke 中的方法，例如这里在执行的时候打印出调用的方法 hello。</p>
+<h3 id="1-2-为什么使用"><a href="#1-2-为什么使用" class="headerlink" title="1.2 为什么使用"></a>1.2 为什么使用</h3><p>代理模式一般用于三个方面：</p>
+<ul>
+<li>lazy-instantiate an object（程序运行的时候才会创建对象）</li>
+<li>远程调用（可参考 Android 中的 IPC）</li>
+<li>对象的访问控制</li>
+</ul>
+<p>在 Retrofit 中由于网络请求是通过接口定义的，所以没办法直接创建对象，其次，这个网络请求的实现是库通过用户定义的注解来实现的，所以很适合使用。</p>
+<h2 id="2-调用流程"><a href="#2-调用流程" class="headerlink" title="2.调用流程"></a>2.调用流程</h2><p>调用流程分为三个部分，第一是通过 Builder 创建一个 Retrofit 对象，第二是通过接口创建一个对象，第三调用使用接口创建的对象完成网络请求。</p>
+<h3 id="2-1-Builder"><a href="#2-1-Builder" class="headerlink" title="2.1 Builder"></a>2.1 Builder</h3><p>Retrofit 是通过 Builder 创建的，那么我们来看下通过 Builder 我们可以自定义哪些东西：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Builder</span> &#123;</span><br><span class="line">   <span class="keyword">private</span> OkHttpClient client;</span><br><span class="line">   <span class="keyword">private</span> BaseUrl baseUrl;</span><br><span class="line">   <span class="keyword">private</span> List&lt;Converter.Factory&gt; converterFactories = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">   <span class="keyword">private</span> List&lt;CallAdapter.Factory&gt; adapterFactories = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">   <span class="keyword">private</span> Executor callbackExecutor;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>client</strong> OkHttpClient 类似于 HttpClient，通过 Builder 可以使使用自己生成的 client</li>
+<li><strong>baseUrl</strong> 类似于 host 地址，baseUrl 将会和接口中定义的路径结合生成地址</li>
+<li><strong>converterFactories</strong> converters 的列表，默认里面会有一个 BuiltInConverters，用来传递 ResponseBody 或 RequestBody</li>
+<li><strong>adapterFactories</strong> adapter 的列表，默认里面会有一个内置的 CallAdapter，用来适配返回值是 Call&lt;?&gt; 的方法</li>
+<li><strong>callbackExecutor</strong> Android 上默认的 Executor 是通过 handler 去 post Runnable 实现的，当使用 enqueue 的时候会在这个 Executor 去执行网络请求，从而实现异步的效果</li>
+</ul>
+<p>可以定义的差不多就是这些，下面我们看看如何通过接口创建一个对象。</p>
+<h3 id="2-2-通过接口创建对象"><a href="#2-2-通过接口创建对象" class="headerlink" title="2.2 通过接口创建对象"></a>2.2 通过接口创建对象</h3><p>通过调用 create 方法创建对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; T <span class="title function_">create</span><span class="params">(<span class="keyword">final</span> Class&lt;T&gt; service)</span> &#123;</span><br><span class="line">    <span class="comment">// 验证是否是接口，不是的话抛出异常</span></span><br><span class="line">    Utils.validateServiceInterface(service);</span><br><span class="line">    <span class="comment">// 检查方法有效性</span></span><br><span class="line">    <span class="keyword">if</span> (validateEagerly) &#123;</span><br><span class="line">        eagerlyValidateMethods(service);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 创建一个一个代理对象</span></span><br><span class="line">    <span class="keyword">return</span> (T) Proxy.newProxyInstance(service.getClassLoader(), <span class="keyword">new</span> <span class="title class_">Class</span>&lt;?&gt;[] &#123; service &#125;,<span class="keyword">new</span> <span class="title class_">InvocationHandler</span>() &#123;</span><br><span class="line">            <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Platform</span> <span class="variable">platform</span> <span class="operator">=</span> Platform.get();</span><br><span class="line">            <span class="meta">@Override</span> <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object... args)</span><span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">            <span class="comment">//If the method is a method from Object then defer to normal invocation.</span></span><br><span class="line">            <span class="keyword">if</span> (method.getDeclaringClass() == Object.class) &#123;</span><br><span class="line">                <span class="keyword">return</span> method.invoke(<span class="built_in">this</span>, args);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// isDefaultMethod 默认返回 false</span></span><br><span class="line">            <span class="keyword">if</span> (platform.isDefaultMethod(method)) &#123;</span><br><span class="line">                <span class="keyword">return</span> platform.invokeDefaultMethod(method, service, proxy, args);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> loadMethodHandler(method).invoke(args);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里就出现了前面所讲的代理，这里创建了一个代理对象，根据前面对代理的讲解，这里的匿名内部类 InvocationHandler 中的 invoke 方法显然是最终执行的地方。这个方法中先是判断方法来源，然后将现有的 method 包装为 MethodHandler 最后执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">MethodHandler&lt;?&gt; loadMethodHandler(Method method) &#123;</span><br><span class="line">  MethodHandler&lt;?&gt; handler;</span><br><span class="line">  <span class="keyword">synchronized</span> (methodHandlerCache) &#123;</span><br><span class="line">    handler = methodHandlerCache.get(method);</span><br><span class="line">    <span class="keyword">if</span> (handler == <span class="literal">null</span>) &#123;</span><br><span class="line">      handler = MethodHandler.create(<span class="built_in">this</span>, method);</span><br><span class="line">      methodHandlerCache.put(method, handler);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> handler;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码中可以看出还为 method 做了缓存，这是因为代理是在运行时调用的，如果不做缓存的话，多次调用就回多创建多个重复的 MethodHandler，为了减少对象的创建，所以做了缓存处理。这里主要还是看下 MethodHandler 的 create 方法，毕竟第一次调用的时候缓存中肯定是什么都没有的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> MethodHandler&lt;?&gt; create(Retrofit retrofit, Method method) &#123;</span><br><span class="line">  CallAdapter&lt;Object&gt; callAdapter = (CallAdapter&lt;Object&gt;) createCallAdapter(method, retrofit);</span><br><span class="line">  <span class="type">Type</span> <span class="variable">responseType</span> <span class="operator">=</span> callAdapter.responseType();</span><br><span class="line">  Converter&lt;ResponseBody, Object&gt; responseConverter =</span><br><span class="line">      (Converter&lt;ResponseBody, Object&gt;) createResponseConverter(method, retrofit, responseType);</span><br><span class="line">  <span class="type">RequestFactory</span> <span class="variable">requestFactory</span> <span class="operator">=</span> RequestFactoryParser.parse(method, responseType, retrofit);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">MethodHandler</span>&lt;&gt;(retrofit, requestFactory, callAdapter, responseConverter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先创建了一个 CallAdapter：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> CallAdapter&lt;?&gt; createCallAdapter(Method method, Retrofit retrofit) &#123;</span><br><span class="line">    <span class="type">Type</span> <span class="variable">returnType</span> <span class="operator">=</span> method.getGenericReturnType();</span><br><span class="line">    Annotation[] annotations = method.getAnnotations();</span><br><span class="line">    <span class="keyword">return</span> retrofit.callAdapter(returnType, annotations);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>简化版本的 createCallAdapter 方法如上，method 就是在接口中定义的方法，例如之前定义过的 getUser 方法，returnType 就是该方法返回值，同时还需要这个方法的注解。最后通过 callAdapter 创建一个 calladapter，例如默认的返回值类型是 Call<ResponseBody>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> CallAdapter&lt;?&gt; callAdapter(Type returnType, Annotation[] annotations) &#123;</span><br><span class="line">    <span class="keyword">return</span> nextCallAdapter(<span class="literal">null</span>, returnType, annotations);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> CallAdapter&lt;?&gt; nextCallAdapter(CallAdapter.Factory skipPast, Type returnType,Annotation[] annotations) &#123;</span><br><span class="line">    checkNotNull(returnType, <span class="string">&quot;returnType == null&quot;</span>);</span><br><span class="line">    checkNotNull(annotations, <span class="string">&quot;annotations == null&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">start</span> <span class="operator">=</span> adapterFactories.indexOf(skipPast) + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> start, count = adapterFactories.size(); i &lt; count; i++) &#123;</span><br><span class="line">      CallAdapter&lt;?&gt; adapter = adapterFactories.get(i).get(returnType, annotations, <span class="built_in">this</span>);</span><br><span class="line">      <span class="keyword">if</span> (adapter != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> adapter;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 错误信息</span></span><br><span class="line">    <span class="type">StringBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;Could not locate call adapter for &quot;</span>)</span><br><span class="line">        .append(returnType)</span><br><span class="line">        .append(<span class="string">&quot;. Tried:&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> start, count = adapterFactories.size(); i &lt; count; i++) &#123;</span><br><span class="line">      builder.append(<span class="string">&quot;\n * &quot;</span>).append(adapterFactories.get(i).getClass().getName());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (skipPast != <span class="literal">null</span>) &#123;</span><br><span class="line">      builder.append(<span class="string">&quot;\nSkipped:&quot;</span>);</span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; start; i++) &#123;</span><br><span class="line">        builder.append(<span class="string">&quot;\n * &quot;</span>).append(adapterFactories.get(i).getClass().getName());</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(builder.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>nextCallAdapter 方法用来获取一个 CallAdapter.Factory，方法说明中提到是下一个 skipPast 类型的 Factory，也符合方法中的 next，所以这里获取 start 的代码有些怪异。由于这里是要招符合返回值类型的 Factory，所以只能从头找起。通过 CallAdapter.Factory 的 get 方法获取 CallAdapter。在如何使用中有说过这个 get 方法，通过返回值类型和注解来判断这个是否可以处理这个返回值。所以如果有合适的 CallAdapter 的话，就会获得对应的 Adapter，如果没有则会抛出一个找不到 Adapter 的异常。<br>再回到 create 方法，下一行是 callAdapter.responseType() 返回一个方法返回值类型的参数，之后就是通过 createResponseConverter 方法来创建一个 Converter：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Converter&lt;ResponseBody, ?&gt; createResponseConverter(Method method,</span><br><span class="line">    Retrofit retrofit, Type responseType) &#123;</span><br><span class="line">  Annotation[] annotations = method.getAnnotations();</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> retrofit.responseConverter(responseType, annotations);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (RuntimeException e) &#123; <span class="comment">// Wide exception range because factories are user code.</span></span><br><span class="line">    <span class="keyword">throw</span> Utils.methodError(e, method, <span class="string">&quot;Unable to create converter for %s&quot;</span>, responseType);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; Converter&lt;ResponseBody, T&gt; <span class="title function_">responseConverter</span><span class="params">(Type type, Annotation[] annotations)</span> &#123;</span><br><span class="line">  checkNotNull(type, <span class="string">&quot;type == null&quot;</span>);</span><br><span class="line">  checkNotNull(annotations, <span class="string">&quot;annotations == null&quot;</span>);</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, count = converterFactories.size(); i &lt; count; i++) &#123;</span><br><span class="line">   Converter&lt;ResponseBody, ?&gt; converter =</span><br><span class="line">        converterFactories.get(i).fromResponseBody(type, annotations);</span><br><span class="line">    <span class="keyword">if</span> (converter != <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">//noinspection unchecked</span></span><br><span class="line">      <span class="keyword">return</span> (Converter&lt;ResponseBody, T&gt;) converter;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">StringBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;Could not locate ResponseBody converter for &quot;</span>)</span><br><span class="line">      .append(type)</span><br><span class="line">      .append(<span class="string">&quot;. Tried:&quot;</span>);</span><br><span class="line">  <span class="keyword">for</span> (Converter.Factory converterFactory : converterFactories) &#123;</span><br><span class="line">    builder.append(<span class="string">&quot;\n * &quot;</span>).append(converterFactory.getClass().getName());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(builder.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码可以看的出和 Adapter 原理是一样的，区别就是 通过 fromResponseBody 方法的返回值判断这个 Converter 是不是这个方法需要的。<br>下一步就是创建一个 RequestFactory：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">RequestFactory</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String method;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BaseUrl baseUrl;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String relativeUrl;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Headers headers;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> MediaType contentType;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> hasBody;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isFormEncoded;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isMultipart;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RequestBuilderAction[] requestBuilderActions;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码中可以看出这个类中包含了请求的全部信息，其中有请求头，地址，content-type，是否要做 urlencode 等。创建过程是通过 RequestFactoryParser.parse 方法来创建的，看起来和 Builder 模式是类似的。</p>
+<p>最后用之前获取到的 requestFactory, callAdapter, responseConverter 再加一个 retrofit 创建一个 MethodHandler 对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MethodHandler</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">MethodHandler</span><span class="params">(Retrofit retrofit, RequestFactory requestFactory, CallAdapter&lt;T&gt; callAdapter, Converter&lt;ResponseBody, T&gt; responseConverter)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.retrofit = retrofit;</span><br><span class="line">        <span class="built_in">this</span>.requestFactory = requestFactory;</span><br><span class="line">        <span class="built_in">this</span>.callAdapter = callAdapter;</span><br><span class="line">        <span class="built_in">this</span>.responseConverter = responseConverter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Object <span class="title function_">invoke</span><span class="params">(Object... args)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> callAdapter.adapt(<span class="keyword">new</span> <span class="title class_">OkHttpCall</span>&lt;&gt;(retrofit, requestFactory, responseConverter, args));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上是简化版的 MethodHandler。<br>饶了这么一大圈终于是绕回来了，可以看到 InvocationHandler 返回的还是 MethodHandler.invoke 之后的结果，这个 invoke 调用了 calladapter 的 adapte 方法，最终网络操作也是在 adapte 中执行的。通过 retrofit 的 create 我们就获取到一个代理对象，其中代理对象的回调方法最终是去调用 calladapter 的 adapte 执行了网络操作。</p>
+<h3 id="2-3-使用接口创建的对象"><a href="#2-3-使用接口创建的对象" class="headerlink" title="2.3 使用接口创建的对象"></a>2.3 使用接口创建的对象</h3><p>当使用用接口创建的对象的对应方法的时候就调用到了符合方法返回值类型的的 adapter 的 adapte 方法。adapte 的参数是 Call<R>，我们在这里可以对 call execute 之后的返回值做处理从而返回一个接口定义的类型的对象。</p>
+<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3.总结"></a>3.总结</h2><p>通过适配器和代理的设计将返回值类型，Call 和请求的定义分开，既简化了 Retrofit 的核心，又使整个库做到轻量且扩展性良好。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/Android/" rel="tag"># Android</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2015/12/11/2015/2015-12-11-Retrofit%20%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/" rel="prev" title="Retrofit 使用指南">
+      <i class="fa fa-chevron-left"></i> Retrofit 使用指南
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2016/01/14/2016/2016-01-14-%20%E4%BD%BF%E7%94%A8%20ffmepg%20%E5%92%8C%20SDL%20%E5%88%B6%E4%BD%9C%E6%92%AD%E6%94%BE%E5%99%A8%E4%B9%8B%E4%B8%80/" rel="next" title="使用 ffmepg 和 SDL 制作播放器之一">
+      使用 ffmepg 和 SDL 制作播放器之一 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">1.代理模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 如何使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 为什么使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">2.调用流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Builder"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Builder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E9%80%9A%E8%BF%87%E6%8E%A5%E5%8F%A3%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 通过接口创建对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E4%BD%BF%E7%94%A8%E6%8E%A5%E5%8F%A3%E5%88%9B%E5%BB%BA%E7%9A%84%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 使用接口创建的对象</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">3.总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Bill Lv</p>
+  <div class="site-description" itemprop="description">YESTERDAY YOU SAID TOMORROW</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bill Lv</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/blog/lib/anime.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.min.js"></script>
+  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
