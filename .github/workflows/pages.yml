@@ -1,4 +1,4 @@
-name: Pages
+name: Hexo_Deploy
 
 on:
   push:
