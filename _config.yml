@@ -106,7 +106,7 @@ marked:
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://github.com/lber19535/lber19535.github.io
+  repo: git@github.com:lber19535/lber19535.github.io.git
   # example, https://github.com/hexojs/hexojs.github.io
   branch: master
 
