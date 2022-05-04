@@ -112,5 +112,5 @@ deploy:
 
 # GA
 google_analytics: 
-  tracking_id: UA-62416761-1
+  tracking_id: G-S001LDMM2K
   only_pageview: false
