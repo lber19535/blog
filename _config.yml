@@ -111,4 +111,5 @@ deploy:
   branch: master
 
 # GA
-google_analytics: UA-62416761-1
+google_analytics: 
+  tracking_id: G-S001LDMM2K
