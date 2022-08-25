@@ -114,3 +114,4 @@ deploy:
 google_analytics: 
   tracking_id: G-S001LDMM2K
   only_pageview: false
+  ga_file_path: source/ga/google985919983d47c7cf.html
