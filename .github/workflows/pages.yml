@@ -27,6 +27,7 @@ jobs:
         run: npm run build
       - name: Deploy
         uses: yrpang/github-actions-hexo@v1.3
+        uses: actions/setup-node@v2
         with:
           deploykey: ${{secrets.HEXO_DEPLOY_PRI}}
           username: lber19535
