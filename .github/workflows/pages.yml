@@ -9,7 +9,7 @@ jobs:
   pages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16.x
         uses: actions/setup-node@v2
         with:
@@ -26,9 +26,13 @@ jobs:
       - name: Build
         run: npm run build
       - name: Deploy
-        uses: yrpang/github-actions-hexo@v1.3
-        with:
-          deploykey: ${{secrets.HEXO_DEPLOY_PRI}}
-          username: lber19535
-          email: lber19535@126.com
+        run: |
+            mkdir -p /root/.ssh/
+            echo ${{secrets.HEXO_DEPLOY_PRI}} >/root/.ssh/id_rsa
+            ssh-keyscan -t rsa github.com >>/root/.ssh/known_hosts
+            git config --global user.name lber19535
+            git config --global user.email lber19535@126.com
+            hexo g
+            hexo d
+
           
