@@ -26,7 +26,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Deploy
-        uses: lber19535/github-actions-hexo@v1.0
+        uses: lber19535/github-actions-hexo@1.0
         with:
           deploykey: ${{secrets.HEXO_DEPLOY_PRI}}
           username: lber19535
